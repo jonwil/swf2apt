@@ -1,0 +1,568 @@
+/* A Bison parser, made by GNU Bison 2.1.  */
+
+/* Skeleton parser for GLR parsing with Bison,
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
+
+/* Tokens.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     MOVIENAME = 258,
+     STRING = 259,
+     INTEGER = 260,
+     HEX = 261,
+     FLOAT = 262,
+     DOUBLE = 263,
+     TRUEVAL = 264,
+     FALSEVAL = 265,
+     NULLVAL = 266,
+     UNDEFVAL = 267,
+     REGISTER = 268,
+     REGISTERALIAS = 269,
+     LABEL = 270,
+     MOVIE = 271,
+     COMPRESSED = 272,
+     PROTECT = 273,
+     SCRIPTLIMITS = 274,
+     RECURSION = 275,
+     TIMEOUT = 276,
+     ENABLEDEBUGGER = 277,
+     ENABLEDEBUGGER2 = 278,
+     FRAME = 279,
+     PLACEMOVIECLIP = 280,
+     DEFINEMOVIECLIP = 281,
+     INITMOVIECLIP = 282,
+     DEFINEBUTTON = 283,
+     ON = 284,
+     ONCLIPEVENT = 285,
+     AS = 286,
+     IMPORTASSETS = 287,
+     EXPORTASSETS = 288,
+     FROM = 289,
+     _NAN = 290,
+     POSITIVE_INFINITY = 291,
+     NEGATIVE_INFINITY = 292,
+     _NANF = 293,
+     POSITIVE_INFINITYF = 294,
+     NEGATIVE_INFINITYF = 295,
+     BIDLETOOVERUP = 296,
+     BOVERUPTOIDLE = 297,
+     BOVERUPTOOVERDOWN = 298,
+     BOVERDOWNTOOVERUP = 299,
+     BOVERDOWNTOOUTDOWN = 300,
+     BOUTDOWNTOOVERDOWN = 301,
+     BOUTDOWNTOIDLE = 302,
+     BIDLETOOVERDOWN = 303,
+     BOVERDOWNTOIDLE = 304,
+     KEYPRESS = 305,
+     _LEFT = 306,
+     _RIGHT = 307,
+     _HOME = 308,
+     _END = 309,
+     _INSERT = 310,
+     _DELETE = 311,
+     _BACKSPACE = 312,
+     _ENTER = 313,
+     _UP = 314,
+     _DOWN = 315,
+     _PGUP = 316,
+     _PGDN = 317,
+     _TAB = 318,
+     _ESCAPE = 319,
+     _SPACE = 320,
+     MCLOAD = 321,
+     MCENTERFRAME = 322,
+     MCUNLOAD = 323,
+     MCMOUSEMOVE = 324,
+     MCMOUSEDOWN = 325,
+     MCMOUSEUP = 326,
+     MCKEYDOWN = 327,
+     MCKEYUP = 328,
+     MCINITIALIZE = 329,
+     MCCONSTRUCT = 330,
+     MCDATA = 331,
+     MCPRESS = 332,
+     MCRELEASE = 333,
+     MCRELEASEOUTSIDE = 334,
+     MCROLLOVER = 335,
+     MCROLLOUT = 336,
+     MCDRAGOVER = 337,
+     MCDRAGOUT = 338,
+     X_PROPERTY = 339,
+     Y_PROPERTY = 340,
+     XSCALE_PROPERTY = 341,
+     YSCALE_PROPERTY = 342,
+     WIDTH_PROPERTY = 343,
+     HEIGHT_PROPERTY = 344,
+     ALPHA_PROPERTY = 345,
+     VISIBLE_PROPERTY = 346,
+     ROTATION_PROPERTY = 347,
+     CURRENTFRAME_PROPERTY = 348,
+     TOTALFRAMES_PROPERTY = 349,
+     TARGET_PROPERTY = 350,
+     FRAMESLOADED_PROPERTY = 351,
+     NAME_PROPERTY = 352,
+     DROPTARGET_PROPERTY = 353,
+     URL_PROPERTY = 354,
+     QUALITY_PROPERTY = 355,
+     XMOUSE_PROPERTY = 356,
+     YMOUSE_PROPERTY = 357,
+     HIGHQUALITY_PROPERTY = 358,
+     FOCUSRECT_PROPERTY = 359,
+     SOUNDBUFTIME_PROPERTY = 360,
+     NEXTFRAME = 361,
+     PREVFRAME = 362,
+     GOTOFRAME = 363,
+     GOTOLABEL = 364,
+     PLAY = 365,
+     STOP = 366,
+     TOGGLEQUALITY = 367,
+     STOPSOUNDS = 368,
+     FUNCTION = 369,
+     FUNCTION2 = 370,
+     CONSTANTS = 371,
+     END = 372,
+     DUP = 373,
+     SWAP = 374,
+     POP = 375,
+     WITH = 376,
+     PUSH = 377,
+     SETREGISTER = 378,
+     CALLFUNCTION = 379,
+     RETURN = 380,
+     NEWMETHOD = 381,
+     CALLMETHOD = 382,
+     BITWISEAND = 383,
+     BITWISEOR = 384,
+     BITWISEXOR = 385,
+     MODULO = 386,
+     NEWADD = 387,
+     NEWLESSTHAN = 388,
+     NEWEQUALS = 389,
+     TONUMBER = 390,
+     TOSTRING = 391,
+     INCREMENT = 392,
+     DECREMENT = 393,
+     TYPEOF = 394,
+     TARGETPATH = 395,
+     ENUMERATE = 396,
+     ENUMERATEVALUE = 397,
+     INSTANCEOF = 398,
+     DELETE = 399,
+     DELETE2 = 400,
+     NEW = 401,
+     INITARRAY = 402,
+     INITOBJECT = 403,
+     GETMEMBER = 404,
+     SETMEMBER = 405,
+     SHIFTLEFT = 406,
+     SHIFTRIGHT = 407,
+     SHIFTRIGHT2 = 408,
+     VAR = 409,
+     VAREQUALS = 410,
+     OLDADD = 411,
+     SUBTRACT = 412,
+     MULTIPLY = 413,
+     DIVIDE = 414,
+     OLDEQUALS = 415,
+     OLDLESSTHAN = 416,
+     STRICTEQUALS = 417,
+     GREATERTHAN = 418,
+     LOGICALAND = 419,
+     LOGICALOR = 420,
+     LOGICALNOT = 421,
+     STRINGEQ = 422,
+     STRINGLENGTH = 423,
+     SUBSTRING = 424,
+     INT = 425,
+     GETVARIABLE = 426,
+     SETVARIABLE = 427,
+     SETTARGET = 428,
+     SETTARGETEXPR = 429,
+     STRINGCONCAT = 430,
+     GETPROPERTY = 431,
+     SETPROPERTY = 432,
+     DUPLICATECLIP = 433,
+     REMOVECLIP = 434,
+     TRACE = 435,
+     STARTDRAGMOVIE = 436,
+     STOPDRAGMOVIE = 437,
+     STRINGLESSTHAN = 438,
+     STRINGGREATERTHAN = 439,
+     RANDOM = 440,
+     MBLENGTH = 441,
+     ORD = 442,
+     CHR = 443,
+     GETTIMER = 444,
+     MBSUBSTRING = 445,
+     MBORD = 446,
+     MBCHR = 447,
+     BRANCHALWAYS = 448,
+     GETURL = 449,
+     GETURL2 = 450,
+     LOADMOVIE = 451,
+     LOADMOVIENUM = 452,
+     LOADVARIABLES = 453,
+     LOADVARIABLESNUM = 454,
+     POST = 455,
+     GET = 456,
+     BRANCHIFTRUE = 457,
+     CALLFRAME = 458,
+     GOTOANDPLAY = 459,
+     GOTOANDSTOP = 460,
+     SKIP = 461,
+     IFFRAMELOADEDEXPR = 462,
+     IFFRAMELOADED = 463,
+     ELSE = 464,
+     STRICTMODE = 465,
+     OFF = 466,
+     IMPLEMENTS = 467,
+     EXTENDS = 468,
+     THROW = 469,
+     CAST = 470,
+     TRY = 471,
+     CATCH = 472,
+     FINALLY = 473,
+     EQUALSIGN = 474,
+     PUSHONE = 475,
+     PUSHZERO = 476,
+     PUSHTRUE = 477,
+     PUSHFALSE = 478,
+     PUSHBYTE = 479,
+     PUSHSHORT = 480,
+     PUSHLONG = 481,
+     PUSHS = 482,
+     PUSHSDB = 483,
+     PUSHSDW = 484,
+     CALLFP = 485,
+     CALLFSV = 486,
+     CALLMP = 487,
+     CALLMSV = 488,
+     PUSHSDBGV = 489,
+     PUSHSDBGM = 490,
+     PUSHTHIS = 491,
+     PUSHGLOBAL = 492,
+     PUSHNULL = 493,
+     PUSHUNDEF = 494,
+     DCALLFP = 495,
+     DCALLFSV = 496,
+     DCALLMP = 497,
+     DCALLMSV = 498,
+     PUSHFLOAT = 499,
+     PUSHTHISGV = 500,
+     PUSHGLOBALGV = 501,
+     PUSHSGV = 502,
+     PUSHSGM = 503,
+     PUSHZEROSV = 504,
+     PUSHSSV = 505,
+     PUSHSSM = 506,
+     BRANCHIFFALSE = 507,
+     APTTRACESTART = 508,
+     PUSHREGISTER = 509,
+     SWFACTION = 510,
+     HEXDATA = 511
+   };
+#endif
+/* Tokens.  */
+#define MOVIENAME 258
+#define STRING 259
+#define INTEGER 260
+#define HEX 261
+#define FLOAT 262
+#define DOUBLE 263
+#define TRUEVAL 264
+#define FALSEVAL 265
+#define NULLVAL 266
+#define UNDEFVAL 267
+#define REGISTER 268
+#define REGISTERALIAS 269
+#define LABEL 270
+#define MOVIE 271
+#define COMPRESSED 272
+#define PROTECT 273
+#define SCRIPTLIMITS 274
+#define RECURSION 275
+#define TIMEOUT 276
+#define ENABLEDEBUGGER 277
+#define ENABLEDEBUGGER2 278
+#define FRAME 279
+#define PLACEMOVIECLIP 280
+#define DEFINEMOVIECLIP 281
+#define INITMOVIECLIP 282
+#define DEFINEBUTTON 283
+#define ON 284
+#define ONCLIPEVENT 285
+#define AS 286
+#define IMPORTASSETS 287
+#define EXPORTASSETS 288
+#define FROM 289
+#define _NAN 290
+#define POSITIVE_INFINITY 291
+#define NEGATIVE_INFINITY 292
+#define _NANF 293
+#define POSITIVE_INFINITYF 294
+#define NEGATIVE_INFINITYF 295
+#define BIDLETOOVERUP 296
+#define BOVERUPTOIDLE 297
+#define BOVERUPTOOVERDOWN 298
+#define BOVERDOWNTOOVERUP 299
+#define BOVERDOWNTOOUTDOWN 300
+#define BOUTDOWNTOOVERDOWN 301
+#define BOUTDOWNTOIDLE 302
+#define BIDLETOOVERDOWN 303
+#define BOVERDOWNTOIDLE 304
+#define KEYPRESS 305
+#define _LEFT 306
+#define _RIGHT 307
+#define _HOME 308
+#define _END 309
+#define _INSERT 310
+#define _DELETE 311
+#define _BACKSPACE 312
+#define _ENTER 313
+#define _UP 314
+#define _DOWN 315
+#define _PGUP 316
+#define _PGDN 317
+#define _TAB 318
+#define _ESCAPE 319
+#define _SPACE 320
+#define MCLOAD 321
+#define MCENTERFRAME 322
+#define MCUNLOAD 323
+#define MCMOUSEMOVE 324
+#define MCMOUSEDOWN 325
+#define MCMOUSEUP 326
+#define MCKEYDOWN 327
+#define MCKEYUP 328
+#define MCINITIALIZE 329
+#define MCCONSTRUCT 330
+#define MCDATA 331
+#define MCPRESS 332
+#define MCRELEASE 333
+#define MCRELEASEOUTSIDE 334
+#define MCROLLOVER 335
+#define MCROLLOUT 336
+#define MCDRAGOVER 337
+#define MCDRAGOUT 338
+#define X_PROPERTY 339
+#define Y_PROPERTY 340
+#define XSCALE_PROPERTY 341
+#define YSCALE_PROPERTY 342
+#define WIDTH_PROPERTY 343
+#define HEIGHT_PROPERTY 344
+#define ALPHA_PROPERTY 345
+#define VISIBLE_PROPERTY 346
+#define ROTATION_PROPERTY 347
+#define CURRENTFRAME_PROPERTY 348
+#define TOTALFRAMES_PROPERTY 349
+#define TARGET_PROPERTY 350
+#define FRAMESLOADED_PROPERTY 351
+#define NAME_PROPERTY 352
+#define DROPTARGET_PROPERTY 353
+#define URL_PROPERTY 354
+#define QUALITY_PROPERTY 355
+#define XMOUSE_PROPERTY 356
+#define YMOUSE_PROPERTY 357
+#define HIGHQUALITY_PROPERTY 358
+#define FOCUSRECT_PROPERTY 359
+#define SOUNDBUFTIME_PROPERTY 360
+#define NEXTFRAME 361
+#define PREVFRAME 362
+#define GOTOFRAME 363
+#define GOTOLABEL 364
+#define PLAY 365
+#define STOP 366
+#define TOGGLEQUALITY 367
+#define STOPSOUNDS 368
+#define FUNCTION 369
+#define FUNCTION2 370
+#define CONSTANTS 371
+#define END 372
+#define DUP 373
+#define SWAP 374
+#define POP 375
+#define WITH 376
+#define PUSH 377
+#define SETREGISTER 378
+#define CALLFUNCTION 379
+#define RETURN 380
+#define NEWMETHOD 381
+#define CALLMETHOD 382
+#define BITWISEAND 383
+#define BITWISEOR 384
+#define BITWISEXOR 385
+#define MODULO 386
+#define NEWADD 387
+#define NEWLESSTHAN 388
+#define NEWEQUALS 389
+#define TONUMBER 390
+#define TOSTRING 391
+#define INCREMENT 392
+#define DECREMENT 393
+#define TYPEOF 394
+#define TARGETPATH 395
+#define ENUMERATE 396
+#define ENUMERATEVALUE 397
+#define INSTANCEOF 398
+#define DELETE 399
+#define DELETE2 400
+#define NEW 401
+#define INITARRAY 402
+#define INITOBJECT 403
+#define GETMEMBER 404
+#define SETMEMBER 405
+#define SHIFTLEFT 406
+#define SHIFTRIGHT 407
+#define SHIFTRIGHT2 408
+#define VAR 409
+#define VAREQUALS 410
+#define OLDADD 411
+#define SUBTRACT 412
+#define MULTIPLY 413
+#define DIVIDE 414
+#define OLDEQUALS 415
+#define OLDLESSTHAN 416
+#define STRICTEQUALS 417
+#define GREATERTHAN 418
+#define LOGICALAND 419
+#define LOGICALOR 420
+#define LOGICALNOT 421
+#define STRINGEQ 422
+#define STRINGLENGTH 423
+#define SUBSTRING 424
+#define INT 425
+#define GETVARIABLE 426
+#define SETVARIABLE 427
+#define SETTARGET 428
+#define SETTARGETEXPR 429
+#define STRINGCONCAT 430
+#define GETPROPERTY 431
+#define SETPROPERTY 432
+#define DUPLICATECLIP 433
+#define REMOVECLIP 434
+#define TRACE 435
+#define STARTDRAGMOVIE 436
+#define STOPDRAGMOVIE 437
+#define STRINGLESSTHAN 438
+#define STRINGGREATERTHAN 439
+#define RANDOM 440
+#define MBLENGTH 441
+#define ORD 442
+#define CHR 443
+#define GETTIMER 444
+#define MBSUBSTRING 445
+#define MBORD 446
+#define MBCHR 447
+#define BRANCHALWAYS 448
+#define GETURL 449
+#define GETURL2 450
+#define LOADMOVIE 451
+#define LOADMOVIENUM 452
+#define LOADVARIABLES 453
+#define LOADVARIABLESNUM 454
+#define POST 455
+#define GET 456
+#define BRANCHIFTRUE 457
+#define CALLFRAME 458
+#define GOTOANDPLAY 459
+#define GOTOANDSTOP 460
+#define SKIP 461
+#define IFFRAMELOADEDEXPR 462
+#define IFFRAMELOADED 463
+#define ELSE 464
+#define STRICTMODE 465
+#define OFF 466
+#define IMPLEMENTS 467
+#define EXTENDS 468
+#define THROW 469
+#define CAST 470
+#define TRY 471
+#define CATCH 472
+#define FINALLY 473
+#define EQUALSIGN 474
+#define PUSHONE 475
+#define PUSHZERO 476
+#define PUSHTRUE 477
+#define PUSHFALSE 478
+#define PUSHBYTE 479
+#define PUSHSHORT 480
+#define PUSHLONG 481
+#define PUSHS 482
+#define PUSHSDB 483
+#define PUSHSDW 484
+#define CALLFP 485
+#define CALLFSV 486
+#define CALLMP 487
+#define CALLMSV 488
+#define PUSHSDBGV 489
+#define PUSHSDBGM 490
+#define PUSHTHIS 491
+#define PUSHGLOBAL 492
+#define PUSHNULL 493
+#define PUSHUNDEF 494
+#define DCALLFP 495
+#define DCALLFSV 496
+#define DCALLMP 497
+#define DCALLMSV 498
+#define PUSHFLOAT 499
+#define PUSHTHISGV 500
+#define PUSHGLOBALGV 501
+#define PUSHSGV 502
+#define PUSHSGM 503
+#define PUSHZEROSV 504
+#define PUSHSSV 505
+#define PUSHSSM 506
+#define BRANCHIFFALSE 507
+#define APTTRACESTART 508
+#define PUSHREGISTER 509
+#define SWFACTION 510
+#define HEXDATA 511
+
+
+
+
+#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+#line 44 "assembler.y"
+typedef union YYSTYPE {
+  long int num;
+  char *str;
+} YYSTYPE;
+/* Line 2359 of glr.c.  */
+#line 550 "assembler.tab.h"
+# define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
+#endif
+
+extern YYSTYPE yylval;
+
+#if ! defined (YYLTYPE) && ! defined (YYLTYPE_IS_DECLARED)
+typedef struct YYLTYPE
+{
+
+  char yydummy;
+
+} YYLTYPE;
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
+
+
+
