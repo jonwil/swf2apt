@@ -108,6 +108,7 @@ namespace eaf2apt
         }
         public void PackTextures(string basename)
         {
+            string fname = Path.GetFileName(basename);
             foreach (var b in bitmaps)
             {
                 if (b.Tga)
@@ -118,7 +119,7 @@ namespace eaf2apt
                         string name = b.TextureName;
                         string name2 = Path.ChangeExtension(b.TextureName, ".tga.noPack");
                         File.Move(name, name2);
-                        string outname = @$"{GlobalData.artdir}\apt_{basename}_{b.ID}.tga";
+                        string outname = @$"{GlobalData.artdir}\apt_{fname}_{b.ID}.tga";
                         ResizeNoPack(b.ID, name2, outname);
                         b.PackOffset.X = 0;
                         b.PackOffset.Y = 0;
@@ -126,7 +127,7 @@ namespace eaf2apt
                     else
                     {
                         string name = b.TextureName;
-                        string outname = @$"{GlobalData.artdir}\apt_{basename}_{b.ID}.tga";
+                        string outname = @$"{GlobalData.artdir}\apt_{fname}_{b.ID}.tga";
                         PackedStrings.Add(@$"{b.ID}->{b.ID}");
                         Resize(name, outname);
                         b.PackOffset.X = 1;
@@ -499,21 +500,22 @@ namespace eaf2apt
                 }
                 using FileStream outfile4 = new FileStream(basename + ".xml", FileMode.Create);
                 {
+                    string fname = Path.GetFileName(basename);
                     using StreamWriter sr = new StreamWriter(outfile4);
                     sr.WriteLine("<?xml version='1.0' encoding='utf-8'?>");
                     sr.WriteLine("<AssetDeclaration xmlns=\"uri:ea.com:eala:asset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
-                    sr.WriteLine("\t<AptAptData id=\"{0}_apt\" File=\"{1}.apt\" />", basename, basename);
-                    sr.WriteLine("\t<AptConstData id=\"{0}_const\" File=\"{1}.const\" />", basename, basename);
-                    sr.WriteLine("\t<AptDatData id=\"{0}_dat\" File=\"{1}.dat\" />", basename, basename);
+                    sr.WriteLine("\t<AptAptData id=\"{0}_apt\" File=\"{1}.apt\" />", fname, basename);
+                    sr.WriteLine("\t<AptConstData id=\"{0}_const\" File=\"{1}.const\" />", fname, basename);
+                    sr.WriteLine("\t<AptDatData id=\"{0}_dat\" File=\"{1}.dat\" />", fname, basename);
                     ShapeIDs.Sort();
                     foreach (var id in ShapeIDs)
                     {
-                        sr.WriteLine("\t<AptGeometryData id=\"{0}_{1}\" File=\"{2}_geometry\\{3}.ru\" AptID=\"{4}\"/>", basename, id, basename, id, id);
+                        sr.WriteLine("\t<AptGeometryData id=\"{0}_{1}\" File=\"{2}\\{3}.ru\" AptID=\"{4}\"/>", fname, id, GlobalData.geometrydir, id, id);
                     }
                     TextureIDs.Sort();
                     foreach (var id in TextureIDs)
                     {
-                        sr.WriteLine("\t<Texture id=\"apt_{0}_{1}\" File=\"{2}\\apt_{3}_{4}.tga\" OutputFormat=\"A8R8G8B8\" GenerateMipMaps=\"false\" AllowAutomaticResize=\"false\"/>", basename, id, GlobalData.artdir, basename, id);
+                        sr.WriteLine("\t<Texture id=\"apt_{0}_{1}\" File=\"{2}\\apt_{3}_{4}.tga\" OutputFormat=\"A8R8G8B8\" GenerateMipMaps=\"false\" AllowAutomaticResize=\"false\"/>", fname, id, GlobalData.artdir, fname, id);
                     }
                     sr.WriteLine("</AssetDeclaration>");
                 }
