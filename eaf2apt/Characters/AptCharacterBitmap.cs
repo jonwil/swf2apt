@@ -116,7 +116,7 @@ namespace eaf2apt.Characters
             }
             else
             {
-                throw new NotSupportedException("Unsupported Image Format");
+                throw new NotSupportedException(@$"Unsupported Image Format for character {tag.CharacterID}");
             }
         }
         public AptCharacterBitmap(DefineBitsTag tag, Globals globaldata) : base(globaldata, tag.CharacterID)
