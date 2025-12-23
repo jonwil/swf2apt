@@ -89,5 +89,11 @@
     <ClCompile Include="zutil.c">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="compress.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="uncompr.c">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

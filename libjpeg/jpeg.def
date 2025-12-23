@@ -1,4 +1,24 @@
 LIBRARY jpeg
 EXPORTS
-    decodejpeg
-    freejpeg
+    DecodeJpeg
+    FreeJpeg
+    FormatDouble
+    FormatDoubleZeroes
+    FormatDoubleG
+    FreeFormattedString
+    GetCharHashTable
+    FreeCharHashTable
+    StoreCharEntry
+    ResetCharIterator
+    GetCharValue
+    CopyCharHashTable
+    GetVectorHashTable
+    FreeVectorHashTable
+    StoreVectorEntry
+    StoreVectorListEntry
+    ResetVectorIterator
+    GetVectorKey
+    GetVectorValue
+    GetVectorListSize
+    GetVectorListEntry
+    VectorEntryExists

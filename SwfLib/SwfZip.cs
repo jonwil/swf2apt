@@ -12,9 +12,6 @@ namespace SwfLib {
                 case SwfFormat.CWS:
                     CompressZlib(uncompressed, target);
                     break;
-                case SwfFormat.ZWS:
-                    CompressLzma(uncompressed, target);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException("Invalid Compression Format");
             }
@@ -26,9 +23,6 @@ namespace SwfLib {
                     return;
                 case SwfFormat.CWS:
                     DecompressZlib(compressed, target);
-                    break;
-                case SwfFormat.ZWS:
-                    DecompressLzma(compressed, target);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("Invalid Compression Format");
@@ -59,19 +53,6 @@ namespace SwfLib {
             zip.Close();
         }
 
-        private static void CompressLzma(Stream uncompressed, Stream target) {
-            var buffer = new byte[4096];
-            int readBytes;
-
-            var zip = new FlashLzipStream(target, CompressionMode.Compress);
-            do {
-                readBytes = uncompressed.Read(buffer, 0, buffer.Length);
-                zip.Write(buffer, 0, readBytes);
-            } while (readBytes > 0);
-            zip.Finish();
-            zip.Flush();
-        }
-
         public static byte[] DecompressZlib(byte[] compressed) {
             var mem = new MemoryStream();
             DecompressZlib(new MemoryStream(compressed), mem);
@@ -87,27 +68,6 @@ namespace SwfLib {
                 target.Write(buffer, 0, readBytes);
             } while (readBytes > 0);
             zip.Flush();
-            target.Seek(0, SeekOrigin.Begin);
-        }
-
-        public static byte[] DecompressLzma(byte[] compressed) {
-            var mem = new MemoryStream();
-            DecompressLzma(new MemoryStream(compressed), mem);
-            return mem.ToArray();
-        }
-
-        private static void DecompressLzma(Stream compressed, Stream target) {
-            var lzmaProperties = new byte[5];
-            compressed.Seek(4, SeekOrigin.Current);
-            compressed.Read(lzmaProperties, 0, 5);
-            var lzmaStream = new LzmaStream(lzmaProperties, compressed);
-            int readBytes;
-            var buffer = new byte[512];
-            do {
-                readBytes = lzmaStream.Read(buffer, 0, buffer.Length);
-                target.Write(buffer, 0, readBytes);
-            } while (readBytes > 0);
-            target.Flush();
             target.Seek(0, SeekOrigin.Begin);
         }
 

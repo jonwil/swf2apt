@@ -1,4 +1,22 @@
-﻿using SwfLib.Data;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using SwfLib.Data;
 using SwfLib.Gradients;
 using SwfLib.Shapes.FillStyles;
 using SwfLib.Shapes.LineStyles;
@@ -8,24 +26,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace eaf2apt.Characters
 {
     public struct FloatVector
     {
-
         public double X;
-
         public double Y;
-
         public override bool Equals(object obj)
         {
-            return obj is FloatVector vector &&
-                   X == vector.X &&
-                   Y == vector.Y;
+            return obj is FloatVector vector && X == vector.X && Y == vector.Y;
         }
-
         public override int GetHashCode()
         {
             return HashCode.Combine(X, Y);
@@ -39,6 +52,7 @@ namespace eaf2apt.Characters
             {
                 return false;
             }
+
             for (int i = 0; i < x.Count; i++)
             {
                 if (!x[i].Equals(y[i]))
@@ -46,12 +60,13 @@ namespace eaf2apt.Characters
                     return false;
                 }
             }
+
             return true;
         }
-
         public int GetHashCode(List<GradientRecordRGBA> obj)
         {
             int result = 17;
+
             for (int i = 0; i < obj.Count; i++)
             {
                 unchecked
@@ -59,6 +74,7 @@ namespace eaf2apt.Characters
                     result = result * 23 + obj[i].GetHashCode();
                 }
             }
+
             return result;
         }
     }
@@ -73,7 +89,6 @@ namespace eaf2apt.Characters
         public bool fill1valid;
         public IFillStyle fill1;
     }
-
     class ShapeEdgeData
     {
         public ShapeEdge edge;
@@ -86,14 +101,12 @@ namespace eaf2apt.Characters
         public int[] neighbors = new int[3];
         public List<ShapeEdgeData> edgedata = new();
     }
-
     class ShapeLine
     {
         public FloatVector from;
         public FloatVector to;
         public ILineStyle style;
     }
-
     class ShapeTriangle
     {
         public FloatVector a;
@@ -101,13 +114,11 @@ namespace eaf2apt.Characters
         public FloatVector c;
         public IFillStyle fill;
     }
-
     class Shape
     {
         public List<ShapeLine> lines = new();
         public List<ShapeTriangle> triangles = new();
     }
-
     class AptCharacterShape : AptCharacter
     {
         public AptRect BoundingRect;
@@ -118,7 +129,56 @@ namespace eaf2apt.Characters
         public int outid;
         public bool empty;
         public List<Shape> shapes = new();
-
+        [DllImport("jpeg.dll", EntryPoint = "FormatDouble", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr FormatDouble(int p, double d);
+        [DllImport("jpeg.dll", EntryPoint = "FormatDoubleZeroes", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr FormatDoubleZeroes(int p, double d);
+        [DllImport("jpeg.dll", EntryPoint = "FormatDoubleG", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr FormatDoubleG(int p, double d);
+        [DllImport("jpeg.dll", EntryPoint = "FreeFormattedString", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern void FreeFormattedString(IntPtr str);
+        [DllImport("jpeg.dll", EntryPoint = "GetVectorHashTable", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr GetVectorHashTable();
+        [DllImport("jpeg.dll", EntryPoint = "FreeVectorHashTable", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern void FreeVectorHashTable(IntPtr table);
+        [DllImport("jpeg.dll", EntryPoint = "StoreVectorEntry", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern void StoreVectorEntry(IntPtr table, String key);
+        [DllImport("jpeg.dll", EntryPoint = "StoreVectorListEntry", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern void StoreVectorListEntry(IntPtr table, String key, String value);
+        [DllImport("jpeg.dll", EntryPoint = "ResetVectorIterator", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern int ResetVectorIterator(IntPtr table);
+        [DllImport("jpeg.dll", EntryPoint = "GetVectorKey", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr GetVectorKey(IntPtr table);
+        [DllImport("jpeg.dll", EntryPoint = "GetVectorValue", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr GetVectorValue(IntPtr table);
+        [DllImport("jpeg.dll", EntryPoint = "GetVectorListSize", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern uint GetVectorListSize(IntPtr v);
+        [DllImport("jpeg.dll", EntryPoint = "GetVectorListEntry", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern IntPtr GetVectorListEntry(IntPtr v, int i);
+        [DllImport("jpeg.dll", EntryPoint = "VectorEntryExists", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        unsafe static extern bool VectorEntryExists(IntPtr table, String key);
+        public String StringFormatDouble(int p, double d)
+        {
+            IntPtr ptr = FormatDouble(p, d);
+            String str = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+            FreeFormattedString(ptr);
+            return str;
+        }
+        public String StringFormatDoubleZeroes(int p, double d)
+        {
+            IntPtr ptr = FormatDoubleZeroes(p, d);
+            String str = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+            FreeFormattedString(ptr);
+            return str;
+        }
+        public String StringFormatDoubleG(int p, double d)
+        {
+            IntPtr ptr = FormatDoubleG(p, d);
+            String str = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+            FreeFormattedString(ptr);
+            return str;
+        }
         public bool IsLeftVector(FloatVector v0, FloatVector v1, FloatVector v2)
         {
             double dx1 = v1.X - v0.X;
@@ -128,28 +188,33 @@ namespace eaf2apt.Characters
             double angle1 = Math.Atan2(dy1, dx1);
             double angle2 = Math.Atan2(dy2, dx2);
             double dangle = angle1 - angle2;
+
             if (dangle > PI)
             {
                 dangle -= 2 * PI;
             }
+
             if (dangle < -PI)
             {
                 dangle += 2 * PI;
             }
+
             if (dangle > 0)
             {
                 return true;
             }
+
             return false;
         }
-
         FloatVector FindEarliestPoint(FloatVector v, Dictionary<String, FloatVector> points)
         {
             string lookup = $"{v.X}_{v.Y}";
+
             if (points.ContainsKey(lookup))
             {
                 return points[lookup];
             }
+
             points[lookup] = v;
             return v;
         }
@@ -159,6 +224,7 @@ namespace eaf2apt.Characters
             if (subdivisions != 0)
             {
                 double minx, maxx, miny, maxy;
+
                 if (a1.X < control.X)
                 {
                     minx = a1.X;
@@ -169,14 +235,17 @@ namespace eaf2apt.Characters
                     minx = control.X;
                     maxx = a1.X;
                 }
+
                 if (a2.X < minx)
                 {
                     minx = a2.X;
                 }
+
                 if (a2.X > maxx)
                 {
                     maxx = a2.X;
                 }
+
                 if (a1.Y < control.Y)
                 {
                     miny = a1.Y;
@@ -187,14 +256,17 @@ namespace eaf2apt.Characters
                     miny = control.Y;
                     maxy = a1.Y;
                 }
+
                 if (a2.Y < miny)
                 {
                     miny = a2.Y;
                 }
+
                 if (a2.Y > maxy)
                 {
                     maxy = a2.Y;
                 }
+
                 if ((maxx - minx) > 30 && (maxy - miny) > 30)
                 {
                     FloatVector v1;
@@ -215,44 +287,50 @@ namespace eaf2apt.Characters
                     return;
                 }
             }
+
             edges.Add(new ShapeEdge { from = a2, to = control, linevalid = hasline, line = line, fill0valid = hasfill0, fill0 = fill0, fill1valid = hasfill1, fill1 = fill1 });
             edges.Add(new ShapeEdge { from = control, to = a1, linevalid = hasline, line = line, fill0valid = hasfill0, fill0 = fill0, fill1valid = hasfill1, fill1 = fill1 });
         }
-
         bool FindEdgeForTriangle(ShapePotentialTriangle tri, List<ShapePotentialTriangle> trilist, out ShapeEdgeData data)
         {
             Dictionary<int, bool> visited = new();
             again:
+
             if (tri.edgedata.Count > 0)
             {
                 data = tri.edgedata[0];
                 return true;
             }
+
             for (int i = 0; i < 3; i++)
             {
                 int neighbor = tri.neighbors[i];
+
                 if (neighbor == -1)
                 {
                     data = new();
                     return false;
                 }
+
                 if (visited.ContainsKey(neighbor))
                 {
                     continue;
                 }
+
                 visited[neighbor] = true;
                 tri = trilist[neighbor];
                 goto again;
             }
+
             data = new();
             return false;
         }
-
         void MakeTris(Shape shape, List<ShapeEdge> edges)
         {
             Dictionary<FloatVector, int> pointhash = new();
             List<FloatVector> points = new();
             List<ShapePotentialTriangle> potentialtriangles = new();
+
             for (int i = 0; i < edges.Count; i++)
             {
                 if (!pointhash.ContainsKey(edges[i].from))
@@ -260,45 +338,67 @@ namespace eaf2apt.Characters
                     points.Add(edges[i].from);
                     pointhash[edges[i].from] = points.Count - 1;
                 }
+
                 if (!pointhash.ContainsKey(edges[i].to))
                 {
                     points.Add(edges[i].to);
                     pointhash[edges[i].to] = points.Count - 1;
                 }
             }
+
             if (points.Count < 3)
             {
                 return;
             }
+
             string fname = "triangletemp";
             Random r = new();
             int number = r.Next(0, 500000);
+
             while (File.Exists(fname + number + ".poly") || File.Exists(fname + number + ".1.node") || File.Exists(fname + number + ".1.ele") || File.Exists(fname + number + ".1.neigh"))
             {
                 number = r.Next(0, 500000);
             }
+
             string name = fname + number;
+
             using FileStream ofile = new FileStream(name + ".poly", FileMode.CreateNew);
             {
                 using StreamWriter ofilesr = new StreamWriter(ofile);
                 {
                     ofilesr.WriteLine(@$"{points.Count} 2 0 0");
+
                     for (int i = 0; i < points.Count; i++)
                     {
-                        ofilesr.WriteLine(@$"{i} {points[i].X} {points[i].Y}");
+                        String x = StringFormatDoubleG(15, points[i].X);
+                        String y = StringFormatDoubleG(15, points[i].Y);
+                        ofilesr.WriteLine(@$"{i} {x} {y}");
                     }
+
                     ofilesr.WriteLine(@$"{edges.Count} 0");
+
                     for (int i = 0; i < edges.Count; i++)
                     {
                         int f = pointhash[edges[i].from];
                         int t = pointhash[edges[i].to];
                         ofilesr.WriteLine(@$"{i} {f} {t}");
                     }
+
                     ofilesr.WriteLine("0");
                 }
             }
-            var process = Process.Start("triangle", @$"-Q -P -c -n -p {name}.poly");
-            process.WaitForExit();
+
+            if (GlobalData.IsRA3)
+            {
+                var process = Process.Start("triangle", @$"-Q -P -c -n -p {name}.poly");
+                process.WaitForExit();
+            }
+            else
+            {
+                var process = Process.Start("triangle", @$"-Q -P -c -n -p -Z {name}.poly");
+                process.WaitForExit();
+            }
+
             using FileStream node = new FileStream(name + ".1.node", FileMode.Open);
             {
                 using FileStream ele = new FileStream(name + ".1.ele", FileMode.Open);
@@ -318,6 +418,7 @@ namespace eaf2apt.Characters
                                     string[] eleheaders = Regex.Split(eleheader, "\\s+");
                                     string[] neighheaders = Regex.Split(neighheader, "\\s+");
                                     int vertices = Convert.ToInt32(nodeheaders[0]);
+
                                     if (points.Count != vertices)
                                     {
                                         for (int i = 0; i < vertices; i++)
@@ -325,6 +426,7 @@ namespace eaf2apt.Characters
                                             string nodel = noder.ReadLine();
                                             nodel = nodel.TrimStart();
                                             string[] coords = Regex.Split(nodel, "\\s+");
+
                                             if (i >= points.Count)
                                             {
                                                 FloatVector v;
@@ -334,7 +436,9 @@ namespace eaf2apt.Characters
                                             }
                                         }
                                     }
+
                                     int triangles = Convert.ToInt32(eleheaders[0]);
+
                                     for (int i = 0; i < triangles; i++)
                                     {
                                         string elel = eler.ReadLine();
@@ -361,22 +465,27 @@ namespace eaf2apt.Characters
                     }
                 }
             }
+
             File.Delete(name + ".poly");
             File.Delete(name + ".1.node");
             File.Delete(name + ".1.ele");
             File.Delete(name + ".1.neigh");
             Dictionary<int, List<ShapeEdge>> pointtoedge = new();
+
             for (int i = 0; i < edges.Count; i++)
             {
                 var e = edges[i];
+
                 if (!pointtoedge.ContainsKey(pointhash[e.from]))
                 {
                     pointtoedge[pointhash[e.from]] = new();
                 }
+
                 if (!pointtoedge.ContainsKey(pointhash[e.to]))
                 {
                     pointtoedge[pointhash[e.to]] = new();
                 }
+
                 pointtoedge[pointhash[e.from]].Add(e);
                 pointtoedge[pointhash[e.to]].Add(e);
             }
@@ -385,66 +494,82 @@ namespace eaf2apt.Characters
                 for (int i = 0; i < 3; i++)
                 {
                     var p = tri.pointindices[i];
+
                     if (pointtoedge.ContainsKey(p))
                     {
                         var e = pointtoedge[p];
+
                         foreach (var edge in e)
                         {
                             int count = 0;
+
                             if (tri.pointindices[0] == pointhash[edge.from])
                             {
                                 count++;
                             }
+
                             if (tri.pointindices[0] == pointhash[edge.to])
                             {
                                 count++;
                             }
+
                             if (tri.pointindices[1] == pointhash[edge.from])
                             {
                                 count++;
                             }
+
                             if (tri.pointindices[1] == pointhash[edge.to])
                             {
                                 count++;
                             }
+
                             if (tri.pointindices[2] == pointhash[edge.from])
                             {
                                 count++;
                             }
+
                             if (tri.pointindices[2] == pointhash[edge.to])
                             {
                                 count++;
                             }
+
                             if (count >= 2)
                             {
                                 FloatVector opposite;
                                 opposite.X = -1;
                                 opposite.Y = -1;
+
                                 if (tri.pointindices[0] != pointhash[edge.from] && tri.pointindices[0] != pointhash[edge.to])
                                 {
                                     opposite = tri.points[0];
                                 }
+
                                 if (tri.pointindices[1] != pointhash[edge.from] && tri.pointindices[1] != pointhash[edge.to])
                                 {
                                     opposite = tri.points[1];
                                 }
+
                                 if (tri.pointindices[2] != pointhash[edge.from] && tri.pointindices[2] != pointhash[edge.to])
                                 {
                                     opposite = tri.points[2];
                                 }
+
                                 tri.edgedata.Add(new ShapeEdgeData { edge = edge, opposite = opposite });
                             }
                         }
                     }
                 }
             }
+
             pointtoedge.Clear();
+
             for (int i = 0; i < potentialtriangles.Count; i++)
             {
                 if (FindEdgeForTriangle(potentialtriangles[i], potentialtriangles, out var edge))
                 {
                     IFillStyle fill;
                     bool fillvalid;
+
                     if (IsLeftVector(edge.edge.from, edge.edge.to, edge.opposite))
                     {
                         fill = edge.edge.fill0;
@@ -455,6 +580,7 @@ namespace eaf2apt.Characters
                         fill = edge.edge.fill1;
                         fillvalid = edge.edge.fill1valid;
                     }
+
                     if (fillvalid)
                     {
                         shape.triangles.Add(new ShapeTriangle { a = potentialtriangles[i].points[0], b = potentialtriangles[i].points[1], c = potentialtriangles[i].points[2], fill = fill });
@@ -462,8 +588,6 @@ namespace eaf2apt.Characters
                 }
             }
         }
-
-
         byte[] MakeLinearGradient(List<GradientRecordRGBA> gradients)
         {
             byte[] imagedata = new byte[256 * 4];
@@ -475,11 +599,13 @@ namespace eaf2apt.Characters
             double deltag = 0;
             double deltab = 0;
             double deltaa = 0;
+
             for (int i = 0; i < 256; i++)
             {
                 for (int j = 0; j < gradients.Count; j++)
                 {
                     var grad = gradients[j];
+
                     if (grad.Ratio == i)
                     {
                         curr = grad.Color.Red;
@@ -496,6 +622,7 @@ namespace eaf2apt.Characters
                         {
                             var nextgrad = gradients[j + 1];
                             var pixels = nextgrad.Ratio - grad.Ratio;
+
                             if (pixels != 0)
                             {
                                 deltar = (nextgrad.Color.Red - curr) / pixels;
@@ -516,6 +643,7 @@ namespace eaf2apt.Characters
                 curb += deltab;
                 cura += deltaa;
             }
+
             return imagedata;
         }
         byte[] MakeRadialGradientFromLinear(byte[] linear, ushort size)
@@ -523,9 +651,11 @@ namespace eaf2apt.Characters
             byte[] radial = new byte[size * size * 4];
             double midpoint = ((double)(size - 1)) / 2;
             double indexscale = 255 / midpoint;
+
             for (int i = 0; i < size; i++)
             {
                 double y = i - midpoint;
+
                 for (int j = 0; j < size; j++)
                 {
                     double x = j - midpoint;
@@ -538,9 +668,9 @@ namespace eaf2apt.Characters
                     radial[i * size * 4 + j * 4 + 3] = linear[clampedindex * 4 + 3];
                 }
             }
+
             return radial;
         }
-
         void ConvertFillStyles(List<FillStyleRGB> filllist, List<FillStyleRGBA> filllist2)
         {
             foreach (var fs in filllist)
@@ -565,6 +695,7 @@ namespace eaf2apt.Characters
                             f2.Gradient.InterpolationMode = linear.Gradient.InterpolationMode;
                             f2.Gradient.SpreadMode = linear.Gradient.SpreadMode;
                             f2.GradientMatrix = linear.GradientMatrix;
+
                             foreach (var gr in linear.Gradient.GradientRecords)
                             {
                                 var gr2 = new GradientRecordRGBA();
@@ -572,6 +703,7 @@ namespace eaf2apt.Characters
                                 gr2.Color = new SwfRGBA(gr.Color);
                                 f2.Gradient.GradientRecords.Add(gr2);
                             }
+
                             filllist2.Add(f2);
                         }
                         break;
@@ -583,6 +715,7 @@ namespace eaf2apt.Characters
                             f2.Gradient.InterpolationMode = radial.Gradient.InterpolationMode;
                             f2.Gradient.SpreadMode = radial.Gradient.SpreadMode;
                             f2.GradientMatrix = radial.GradientMatrix;
+
                             foreach (var gr in radial.Gradient.GradientRecords)
                             {
                                 var gr2 = new GradientRecordRGBA();
@@ -590,6 +723,7 @@ namespace eaf2apt.Characters
                                 gr2.Color = new SwfRGBA(gr.Color);
                                 f2.Gradient.GradientRecords.Add(gr2);
                             }
+
                             filllist2.Add(f2);
                         }
                         break;
@@ -603,7 +737,6 @@ namespace eaf2apt.Characters
                 }
             }
         }
-
         void ConvertLineStyles(List<LineStyleRGB> linelist, List<LineStyleRGBA> linelist2)
         {
             foreach (var ls in linelist)
@@ -614,10 +747,10 @@ namespace eaf2apt.Characters
                 linelist2.Add(ls2);
             }
         }
-
         void BuildShapes(bool type2, List<IShapeRecordRGB> shaperecs, List<FillStyleRGB> filllist, List<LineStyleRGB> linelist, int? curlineindex = null, int? curfill0index = null, int? curfill1index = null)
         {
             List<IShapeRecordRGBA> sr = new();
+
             foreach (var rec in shaperecs)
             {
                 switch (rec)
@@ -654,13 +787,13 @@ namespace eaf2apt.Characters
                         break;
                 }
             }
+
             List<FillStyleRGBA> fs = new();
             ConvertFillStyles(filllist, fs);
             List<LineStyleRGBA> ls = new();
             ConvertLineStyles(linelist, ls);
             BuildShapes(type2, sr, fs, ls, curlineindex, curfill0index, curfill1index);
         }
-
         void BuildShapes(bool type2, List<IShapeRecordRGBA> shaperecs, List<FillStyleRGBA> filllist, List<LineStyleRGBA> linelist, int? curlineindex = null, int? curfill0index = null, int? curfill1index = null)
         {
             Dictionary<string, FloatVector> points = new();
@@ -682,25 +815,31 @@ namespace eaf2apt.Characters
             FloatVector last2pos = new();
             FloatVector v = new FloatVector { X = 0, Y = 0 };
             FloatVector lastpos = FindEarliestPoint(v, points);
+
             if (CurLineStyleIndex is not null)
             {
                 curlinestyle = lines[CurLineStyleIndex.Value];
                 haslinestyle = true;
             }
+
             if (CurFillStyle0Index is not null)
             {
                 curfillstyle0 = fills[CurFillStyle0Index.Value];
                 hasfillstyle0 = true;
             }
+
             if (CurFillStyle1Index is not null)
             {
                 curfillstyle1 = fills[CurFillStyle1Index.Value];
                 hasfillstyle1 = true;
             }
+
             bool maketris = false;
+
             for (int i = 0; i < shaperecs.Count; i++)
             {
                 var shaperec = shaperecs[i];
+
                 switch (shaperec)
                 {
                     case StyleChangeShapeRecordRGBA style:
@@ -710,6 +849,7 @@ namespace eaf2apt.Characters
                             {
                                 fills = new(style.FillStyles);
                             }
+
                             if (style.LineStyles.Count > 0)
                             {
                                 lines = new(style.LineStyles);
@@ -718,6 +858,7 @@ namespace eaf2apt.Characters
                         if (style.LineStyle is not null)
                         {
                             CurLineStyleIndex = ((int)style.LineStyle.Value) - 1;
+
                             if (style.LineStyle.Value > 0)
                             {
                                 curlinestyle = lines[CurLineStyleIndex.Value];
@@ -732,6 +873,7 @@ namespace eaf2apt.Characters
                         if (style.FillStyle0 is not null)
                         {
                             CurFillStyle0Index = ((int)style.FillStyle0.Value) - 1;
+
                             if (style.FillStyle0.Value > 0)
                             {
                                 curfillstyle0 = fills[CurFillStyle0Index.Value];
@@ -746,6 +888,7 @@ namespace eaf2apt.Characters
                         if (style.FillStyle1 is not null)
                         {
                             CurFillStyle1Index = ((int)style.FillStyle1.Value) - 1;
+
                             if (style.FillStyle1.Value > 0)
                             {
                                 curfillstyle1 = fills[CurFillStyle1Index.Value];
@@ -780,6 +923,7 @@ namespace eaf2apt.Characters
                         FloatVector v4 = new FloatVector { X = lastpos.X + straight.DeltaX, Y = lastpos.Y + straight.DeltaY };
                         FloatVector newpos = FindEarliestPoint(v4, points);
                         edges.Add(new ShapeEdge { from = lastpos, to = newpos, line = curlinestyle, linevalid = haslinestyle, fill0 = curfillstyle0, fill0valid = hasfillstyle0, fill1 = curfillstyle1, fill1valid = hasfillstyle1 });
+
                         if (last2posvalid && newpos.X == last2pos.X && newpos.Y == last2pos.Y)
                         {
                             edges[edges.Count - 1].fill0 = new SolidFillStyleRGBA();
@@ -791,6 +935,7 @@ namespace eaf2apt.Characters
                             edges[edges.Count - 2].fill1 = new SolidFillStyleRGBA();
                             edges[edges.Count - 2].fill1valid = false;
                         }
+
                         last2pos = lastpos;
                         last2posvalid = true;
                         lastpos = newpos;
@@ -806,10 +951,12 @@ namespace eaf2apt.Characters
                         lastpos = anchor;
                         break;
                 }
+
                 if (i == shaperecs.Count - 1)
                 {
                     maketris = true;
                 }
+
                 if (maketris)
                 {
                     foreach (var edge in edges)
@@ -819,6 +966,7 @@ namespace eaf2apt.Characters
                             shape.lines.Add(new ShapeLine { from = edge.from, to = edge.to, style = edge.line });
                         }
                     }
+
                     MakeTris(shape, edges);
                     maketris = false;
                     shapes.Add(shape);
@@ -827,8 +975,10 @@ namespace eaf2apt.Characters
                     points.Clear();
                 }
             }
+
             Dictionary<List<GradientRecordRGBA>, int> LinearStyles = new(new EqualityComparerRGBA());
             Dictionary<List<GradientRecordRGBA>, int> RadialStyles = new(new EqualityComparerRGBA());
+
             foreach (var s in shapes)
             {
                 foreach (var t in s.triangles)
@@ -849,6 +999,7 @@ namespace eaf2apt.Characters
                                 GlobalData.AddExtraCharacter(b);
                                 LinearStyles[linear.Gradient.GradientRecords] = id;
                             }
+
                             linear.BitmapID = (ushort)LinearStyles[linear.Gradient.GradientRecords];
                             break;
                         case RadialGradientFillStyleRGBA radial:
@@ -862,18 +1013,26 @@ namespace eaf2apt.Characters
                                 GlobalData.AddExtraCharacter(b);
                                 RadialStyles[radial.Gradient.GradientRecords] = id;
                             }
+
                             radial.BitmapID = (ushort)RadialStyles[radial.Gradient.GradientRecords];
                             break;
                     }
                 }
             }
         }
-
         public override void OutputCharacter(int i)
         {
             base.OutputCharacter(i);
             GlobalData.output.Write(3, (int)AptCharacterType.Shape);
             GlobalData.output.Write(3, 0x09876543);
+
+            if (GlobalData.IsTT)
+            {
+                GlobalData.output.Write(3, (ushort)0x0);
+                GlobalData.output.Write(3, (ushort)GetTextureID());
+                GlobalData.output.Write(3, 0x0);
+            }
+
             GlobalData.output.Write(3, BoundingRect);
             GlobalData.output.Write(3, i);
         }
@@ -889,10 +1048,10 @@ namespace eaf2apt.Characters
             mat[5] = -(mat[1] * matrix[4] + mat[3] * matrix[5]);
             return mat;
         }
-
         double[] MatMult(double[] m0, double[] m1)
         {
             double[] m = new double[16];
+
             for (int j = 0; j < 4; j++)
             {
                 for (int i = 0; i < 4; i++)
@@ -906,11 +1065,54 @@ namespace eaf2apt.Characters
         {
             return @$"{color.Red}:{color.Green}:{color.Blue}:{color.Alpha}";
         }
+        public int GetTextureID()
+        {
+            int textid = 0;
+            
+            if (shapes.Count == 0 || empty)
+            {
+                return textid;
+            }
+
+            foreach (var ishape in shapes)
+            {
+                int tris = ishape.triangles.Count;
+
+                if (tris > 0)
+                {
+                    foreach (var t in ishape.triangles)
+                    {
+                        var style = t.fill;
+                        switch (style)
+                        {
+                            case LinearGradientFillStyleRGBA linear:
+                                {
+                                    textid = linear.BitmapID;
+                                }
+                                break;
+                            case RadialGradientFillStyleRGBA radial:
+                                {
+                                    textid = radial.BitmapID;
+                                }
+                                break;
+                            case BitmapFillStyleRGBA bitmap:
+                                {
+                                    textid = bitmap.BitmapID;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return textid;
+        }
         public void WriteShapeFile()
         {
             string filename = @$"{GlobalData.geometrydir}\{outid}.ru";
             using FileStream rus = new FileStream(filename, FileMode.Create);
             using StreamWriter ru = new StreamWriter(rus);
+
             if (shapes.Count == 0 || empty)
             {
                 ru.Write("c\r\n");
@@ -918,40 +1120,43 @@ namespace eaf2apt.Characters
                 ru.Write("t 0:0:0:0:0:0\r\n");
                 return;
             }
+
             foreach (var ishape in shapes)
             {
-                Dictionary<string, List<string>> tridata = new();
-                List<string> trikeys = new();
+                IntPtr shapedata = GetVectorHashTable();
                 ru.Write("c\r\n");
                 int tris = ishape.triangles.Count;
+
                 if (tris > 0)
                 {
                     foreach (var t in ishape.triangles)
                     {
                         var style = t.fill;
-                        string tritext = @$"{(t.a.X / 20.0f)}:{(t.a.Y / 20.0f)}:{(t.b.X / 20.0f)}:{(t.b.Y / 20.0f)}:{(t.c.X / 20.0f)}:{(t.c.Y / 20.0f)}";
+                        string tritext = @$"{StringFormatDoubleG(15, t.a.X / 20.0)}:{StringFormatDoubleG(15, t.a.Y / 20.0)}:{StringFormatDoubleG(15, t.b.X / 20.0)}:{StringFormatDoubleG(15, t.b.Y / 20.0)}:{StringFormatDoubleG(15, t.c.X / 20.0)}:{StringFormatDoubleG(15, t.c.Y / 20.0)}";
+
                         switch (style)
                         {
                             case SolidFillStyleRGBA solid:
                                 {
                                     string key = "s:" + FormatColor(solid.Color);
-                                    if (!tridata.ContainsKey(key))
+
+                                    if (!VectorEntryExists(shapedata, key))
                                     {
-                                        trikeys.Add(key);
-                                        tridata[key] = new();
+                                        StoreVectorEntry(shapedata, key);
                                     }
-                                    tridata[key].Add(tritext);
+
+                                    StoreVectorListEntry(shapedata, key, tritext);
                                 }
                                 break;
                             case LinearGradientFillStyleRGBA linear:
                                 {
                                     double[] mat = new double[6];
-                                    mat[0] = linear.GradientMatrix.ScaleX / 20.0f;
-                                    mat[1] = linear.GradientMatrix.RotateSkew0 / 20.0f;
-                                    mat[2] = linear.GradientMatrix.RotateSkew1 / 20.0f;
-                                    mat[3] = linear.GradientMatrix.ScaleY / 20.0f;
-                                    mat[4] = linear.GradientMatrix.TranslateX / 20.0f;
-                                    mat[5] = linear.GradientMatrix.TranslateY / 20.0f;
+                                    mat[0] = linear.GradientMatrix.ScaleX / 20.0;
+                                    mat[1] = linear.GradientMatrix.RotateSkew0 / 20.0;
+                                    mat[2] = linear.GradientMatrix.RotateSkew1 / 20.0;
+                                    mat[3] = linear.GradientMatrix.ScaleY / 20.0;
+                                    mat[4] = linear.GradientMatrix.TranslateX / 20.0;
+                                    mat[5] = linear.GradientMatrix.TranslateY / 20.0;
                                     var invmat = MatInv(mat);
                                     double[] afmat = new double[16];
                                     afmat[0] = invmat[0];
@@ -971,72 +1176,73 @@ namespace eaf2apt.Characters
                                     afmat[14] = 0;
                                     afmat[15] = 1;
                                     double[] gradmat = new double[16];
-                                    gradmat[0] = 256.0f / 32768.0f;
+                                    gradmat[0] = 256.0 / 32768.0;
                                     gradmat[1] = 0;
                                     gradmat[2] = 0;
                                     gradmat[3] = 0;
                                     gradmat[4] = 0;
-                                    gradmat[5] = 1.0f / 32768.0f;
+                                    gradmat[5] = 1.0 / 32768.0;
                                     gradmat[6] = 0;
                                     gradmat[7] = 0;
                                     gradmat[8] = 0;
                                     gradmat[9] = 0;
                                     gradmat[10] = 1;
                                     gradmat[11] = 0;
-                                    gradmat[12] = 0.5f * 256.0f;
-                                    gradmat[13] = -0.5f;
+                                    gradmat[12] = 0.5 * 256.0;
+                                    gradmat[13] = -0.5;
                                     gradmat[14] = 0;
                                     gradmat[15] = 1;
                                     double[] m = MatMult(afmat, gradmat);
+
                                     if (m[0] == -0.0)
                                     {
                                         m[0] = 0.0;
                                     }
+
                                     if (m[1] == -0.0)
                                     {
                                         m[1] = 0.0;
                                     }
+
                                     if (m[4] == -0.0)
                                     {
                                         m[4] = 0.0;
                                     }
+
                                     if (m[5] == -0.0)
                                     {
                                         m[5] = 0.0;
                                     }
+
                                     if (m[12] == -0.0)
                                     {
                                         m[12] = 0.0;
                                     }
+
                                     if (m[13] == -0.0)
                                     {
                                         m[13] = 0.0;
                                     }
-                                    FloatVector PackOffset = new FloatVector { X = 0, Y = 0 };
-                                    if (GlobalData.AllCharacters[linear.BitmapID] is AptCharacterBitmap b)
+
+                                    string key = @$"tc:255:255:255:255:{linear.BitmapID}:{StringFormatDouble(6, m[0])}:{StringFormatDouble(6, m[1])}:{StringFormatDouble(6, m[4])}:{StringFormatDouble(6, m[5])}:{StringFormatDouble(6, m[12])}:{StringFormatDouble(6, m[13])}";
+
+                                    if (!VectorEntryExists(shapedata, key))
                                     {
-                                        PackOffset = b.PackOffset;
+                                        StoreVectorEntry(shapedata, key);
                                     }
-                                    m[12] += PackOffset.X;
-                                    m[13] += PackOffset.Y;
-                                    string key = @$"tc:255:255:255:255:{linear.BitmapID}:{((float)m[0]).ToString("0.000000")}:{((float)m[1]).ToString("0.000000")}:{((float)m[4]).ToString("0.000000")}:{((float)m[5]).ToString("0.000000")}:{((float)m[12]).ToString("0.000000")}:{((float)m[13]).ToString("0.000000")}";
-                                    if (!tridata.ContainsKey(key))
-                                    {
-                                        trikeys.Add(key);
-                                        tridata[key] = new();
-                                    }
-                                    tridata[key].Add(tritext);
+
+                                    StoreVectorListEntry(shapedata, key, tritext);
                                 }
                                 break;
                             case RadialGradientFillStyleRGBA radial:
                                 {
                                     double[] mat = new double[6];
-                                    mat[0] = radial.GradientMatrix.ScaleX / 20.0f;
-                                    mat[1] = radial.GradientMatrix.RotateSkew0 / 20.0f;
-                                    mat[2] = radial.GradientMatrix.RotateSkew1 / 20.0f;
-                                    mat[3] = radial.GradientMatrix.ScaleY / 20.0f;
-                                    mat[4] = radial.GradientMatrix.TranslateX / 20.0f;
-                                    mat[5] = radial.GradientMatrix.TranslateY / 20.0f;
+                                    mat[0] = radial.GradientMatrix.ScaleX / 20.0;
+                                    mat[1] = radial.GradientMatrix.RotateSkew0 / 20.0;
+                                    mat[2] = radial.GradientMatrix.RotateSkew1 / 20.0;
+                                    mat[3] = radial.GradientMatrix.ScaleY / 20.0;
+                                    mat[4] = radial.GradientMatrix.TranslateX / 20.0;
+                                    mat[5] = radial.GradientMatrix.TranslateY / 20.0;
                                     var invmat = MatInv(mat);
                                     double[] afmat = new double[16];
                                     afmat[0] = invmat[0];
@@ -1057,157 +1263,184 @@ namespace eaf2apt.Characters
                                     afmat[15] = 1;
                                     double[] gradmat = new double[16];
                                     ushort GradientCircleSize = 32;
-                                    gradmat[0] = GradientCircleSize / 32768.0f;
+                                    gradmat[0] = GradientCircleSize / 32768.0;
                                     gradmat[1] = 0;
                                     gradmat[2] = 0;
                                     gradmat[3] = 0;
                                     gradmat[4] = 0;
-                                    gradmat[5] = GradientCircleSize / 32768.0f;
+                                    gradmat[5] = GradientCircleSize / 32768.0;
                                     gradmat[6] = 0;
                                     gradmat[7] = 0;
                                     gradmat[8] = 0;
                                     gradmat[9] = 0;
                                     gradmat[10] = 1;
                                     gradmat[11] = 0;
-                                    gradmat[12] = 0.5f * GradientCircleSize;
-                                    gradmat[13] = 0.5f * GradientCircleSize;
+                                    gradmat[12] = 0.5 * GradientCircleSize;
+                                    gradmat[13] = 0.5 * GradientCircleSize;
                                     gradmat[14] = 0;
                                     gradmat[15] = 1;
                                     double[] m = MatMult(afmat, gradmat);
+
                                     if (m[0] == -0.0)
                                     {
                                         m[0] = 0.0;
                                     }
+
                                     if (m[1] == -0.0)
                                     {
                                         m[1] = 0.0;
                                     }
+
                                     if (m[4] == -0.0)
                                     {
                                         m[4] = 0.0;
                                     }
+
                                     if (m[5] == -0.0)
                                     {
                                         m[5] = 0.0;
                                     }
+
                                     if (m[12] == -0.0)
                                     {
                                         m[12] = 0.0;
                                     }
+
                                     if (m[13] == -0.0)
                                     {
                                         m[13] = 0.0;
                                     }
-                                    FloatVector PackOffset = new FloatVector { X = 0, Y = 0 };
-                                    if (GlobalData.AllCharacters[radial.BitmapID] is AptCharacterBitmap b)
+
+                                    string key = @$"tc:255:255:255:255:{radial.BitmapID}:{StringFormatDouble(6, m[0])}:{StringFormatDouble(6, m[1])}:{StringFormatDouble(6, m[4])}:{StringFormatDouble(6, m[5])}:{StringFormatDouble(6, m[12])}:{StringFormatDouble(6, m[13])}";
+
+                                    if (!VectorEntryExists(shapedata, key))
                                     {
-                                        PackOffset = b.PackOffset;
+                                        StoreVectorEntry(shapedata, key);
                                     }
-                                    m[12] += PackOffset.X;
-                                    m[13] += PackOffset.Y;
-                                    string key = @$"tc:255:255:255:255:{radial.BitmapID}:{((float)m[0]).ToString("0.000000")}:{((float)m[1]).ToString("0.000000")}:{((float)m[4]).ToString("0.000000")}:{((float)m[5]).ToString("0.000000")}:{((float)m[12]).ToString("0.000000")}:{((float)m[13]).ToString("0.000000")}";
-                                    if (!tridata.ContainsKey(key))
-                                    {
-                                        trikeys.Add(key);
-                                        tridata[key] = new();
-                                    }
-                                    tridata[key].Add(tritext);
+
+                                    StoreVectorListEntry(shapedata, key, tritext);
                                 }
                                 break;
                             case BitmapFillStyleRGBA bitmap:
                                 {
                                     double[] mat = new double[6];
-                                    mat[0] = bitmap.BitmapMatrix.ScaleX / 20.0f;
-                                    mat[1] = bitmap.BitmapMatrix.RotateSkew0 / 20.0f;
-                                    mat[2] = bitmap.BitmapMatrix.RotateSkew1 / 20.0f;
-                                    mat[3] = bitmap.BitmapMatrix.ScaleY / 20.0f;
-                                    mat[4] = bitmap.BitmapMatrix.TranslateX / 20.0f;
-                                    mat[5] = bitmap.BitmapMatrix.TranslateY / 20.0f;
+                                    mat[0] = bitmap.BitmapMatrix.ScaleX / 20.0;
+                                    mat[1] = bitmap.BitmapMatrix.RotateSkew0 / 20.0;
+                                    mat[2] = bitmap.BitmapMatrix.RotateSkew1 / 20.0;
+                                    mat[3] = bitmap.BitmapMatrix.ScaleY / 20.0;
+                                    mat[4] = bitmap.BitmapMatrix.TranslateX / 20.0;
+                                    mat[5] = bitmap.BitmapMatrix.TranslateY / 20.0;
                                     var invmat = MatInv(mat);
+
                                     if (invmat[0] == -0.0)
                                     {
                                         invmat[0] = 0.0;
                                     }
+
                                     if (invmat[1] == -0.0)
                                     {
                                         invmat[1] = 0.0;
                                     }
+
                                     if (invmat[2] == -0.0)
                                     {
                                         invmat[2] = 0.0;
                                     }
+
                                     if (invmat[3] == -0.0)
                                     {
                                         invmat[3] = 0.0;
                                     }
+
                                     if (invmat[4] == -0.0)
                                     {
                                         invmat[4] = 0.0;
                                     }
+
                                     if (invmat[5] == -0.0)
                                     {
                                         invmat[5] = 0.0;
                                     }
-                                    FloatVector PackOffset = new FloatVector { X = 0, Y = 0 };
-                                    if (GlobalData.AllCharacters[bitmap.BitmapID] is AptCharacterBitmap b)
+
+                                    string key = @$"{((bitmap.Mode == BitmapMode.Repeat) ? "tw" : "tc")}:255:255:255:255:{bitmap.BitmapID}:{StringFormatDouble(6, invmat[0])}:{StringFormatDouble(6, invmat[1])}:{StringFormatDouble(6, invmat[2])}:{StringFormatDouble(6, invmat[3])}:{StringFormatDouble(6, invmat[4])}:{StringFormatDouble(6, invmat[5])}";
+
+                                    if (!VectorEntryExists(shapedata, key))
                                     {
-                                        PackOffset = b.PackOffset;
+                                        StoreVectorEntry(shapedata, key);
                                     }
-                                    invmat[4] += PackOffset.X;
-                                    invmat[5] += PackOffset.Y;
-                                    string key = @$"{((bitmap.Mode == BitmapMode.Repeat) ? "tw" : "tc")}:255:255:255:255:{bitmap.BitmapID}:{((float)invmat[0]).ToString("0.000000")}:{((float)invmat[1]).ToString("0.000000")}:{((float)invmat[2]).ToString("0.000000")}:{((float)invmat[3]).ToString("0.000000")}:{((float)invmat[4]).ToString("0.000000")}:{((float)invmat[5]).ToString("0.000000")}";
-                                    if (!tridata.ContainsKey(key))
-                                    {
-                                        trikeys.Add(key);
-                                        tridata[key] = new();
-                                    }
-                                    tridata[key].Add(tritext);
+
+                                    StoreVectorListEntry(shapedata, key, tritext);
                                 }
                                 break;
                         }
                     }
-                    foreach (var entry in trikeys)
+
+                    int count = ResetVectorIterator(shapedata);
+
+                    for (int i = 0; i < count; i++)
                     {
-                        ru.Write("s " + entry + "\r\n");
-                        foreach (var t in tridata[entry])
+                        String key = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(GetVectorKey(shapedata));
+                        ru.Write("s " + key + "\r\n");
+                        IntPtr value = GetVectorValue(shapedata);
+                        uint tcount = GetVectorListSize(value);
+
+                        for (int j = 0; j < tcount; j++)
                         {
+                            String t = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(GetVectorListEntry(value, j));
                             ru.Write("t " + t + "\r\n");
                         }
                     }
+
+                    FreeVectorHashTable(shapedata);
                 }
+
                 int lines = ishape.lines.Count;
+
                 if (lines > 0)
                 {
-                    Dictionary<string, List<string>> linedata = new();
-                    List<string> linekeys = new();
+                    IntPtr linedata = GetVectorHashTable();
+
                     foreach (var line in ishape.lines)
                     {
                         string key = "";
                         var style = line.style;
+
                         switch (style)
                         {
                             case LineStyleRGBA l:
                                 {
-                                    key = @$"l:{l.Width / 20.0f}:{FormatColor(l.Color)}";
+                                    key = @$"l:{l.Width / 20.0}:{FormatColor(l.Color)}";
                                 }
                                 break;
                         }
-                        if (!linedata.ContainsKey(key))
+
+                        if (!VectorEntryExists(linedata, key))
                         {
-                            linekeys.Add(key);
-                            linedata[key] = new();
+                            StoreVectorEntry(linedata, key);
                         }
-                        linedata[key].Add(@$"{(line.from.X / 20.0f)}:{(line.from.Y / 20.0f)}:{(line.to.X / 20.0f)}:{(line.to.Y / 20.0f)}");
+
+                        StoreVectorListEntry(linedata, key, @$"{(line.from.X / 20.0)}:{(line.from.Y / 20.0)}:{(line.to.X / 20.0)}:{(line.to.Y / 20.0)}");
                     }
-                    foreach (var entry in linekeys)
+
+                    int count = ResetVectorIterator(linedata);
+
+                    for (int i = 0; i < count; i++)
                     {
-                        ru.Write("s " + entry + "\r\n");
-                        foreach (var t in linedata[entry])
+                        String key = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(GetVectorKey(linedata));
+                        ru.Write("s " + key + "\r\n");
+                        IntPtr value = GetVectorValue(linedata);
+                        uint tcount = GetVectorListSize(value);
+
+                        for (int j = 0; j < tcount; j++)
                         {
+                            String t = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(GetVectorListEntry(value, j));
                             ru.Write("l " + t + "\r\n");
                         }
                     }
+
+                    FreeVectorHashTable(linedata);
                 }
+
                 if (lines == 0 && tris == 0)
                 {
                     ru.Write("c\r\n");
@@ -1218,34 +1451,48 @@ namespace eaf2apt.Characters
             }
             return;
         }
-
+        bool IsPow2(int n)
+        {
+            return (n & (n - 1)) == 0;
+        }
         public void UpdateShape(int i)
         {
             empty = true;
+
             if (!GlobalData.HitTestShapes.ContainsKey(i) || GlobalData.ReferencedCharacters.ContainsKey(i))
             {
                 empty = false;
             }
+
             outid = i;
+
             if (shapes.Count == 0 || empty)
             {
                 return;
             }
+
             foreach (var ishape in shapes)
             {
                 int tris = ishape.triangles.Count;
+
                 if (tris > 0)
                 {
                     foreach (var t in ishape.triangles)
                     {
                         var style = t.fill;
+
                         switch (style)
                         {
                             case LinearGradientFillStyleRGBA linear:
                                 {
-                                    if (linear.GradientMatrix.HasRotate)
+                                    if (GlobalData.AllCharacters[linear.BitmapID] is AptCharacterBitmap b)
                                     {
-                                        if (GlobalData.AllCharacters[linear.BitmapID] is AptCharacterBitmap b)
+                                        if (linear.GradientMatrix.HasRotate)
+                                        {
+                                            b.NoPack = true;
+                                        }
+
+                                        if (GlobalData.IsTT && IsPow2(b.Width) && IsPow2(b.Height))
                                         {
                                             b.NoPack = true;
                                         }
@@ -1254,9 +1501,14 @@ namespace eaf2apt.Characters
                                 break;
                             case RadialGradientFillStyleRGBA radial:
                                 {
-                                    if (radial.GradientMatrix.HasRotate)
+                                    if (GlobalData.AllCharacters[radial.BitmapID] is AptCharacterBitmap b)
                                     {
-                                        if (GlobalData.AllCharacters[radial.BitmapID] is AptCharacterBitmap b)
+                                        if (radial.GradientMatrix.HasRotate)
+                                        {
+                                            b.NoPack = true;
+                                        }
+
+                                        if (GlobalData.IsTT && IsPow2(b.Width) && IsPow2(b.Height))
                                         {
                                             b.NoPack = true;
                                         }
@@ -1265,9 +1517,14 @@ namespace eaf2apt.Characters
                                 break;
                             case BitmapFillStyleRGBA bitmap:
                                 {
-                                    if (bitmap.BitmapMatrix.HasRotate)
+                                    if (GlobalData.AllCharacters[bitmap.BitmapID] is AptCharacterBitmap b)
                                     {
-                                        if (GlobalData.AllCharacters[bitmap.BitmapID] is AptCharacterBitmap b)
+                                        if (bitmap.BitmapMatrix.HasRotate)
+                                        {
+                                            b.NoPack = true;
+                                        }
+
+                                        if (GlobalData.IsTT && IsPow2(b.Width) && IsPow2(b.Height))
                                         {
                                             b.NoPack = true;
                                         }
@@ -1283,17 +1540,14 @@ namespace eaf2apt.Characters
         {
             BuildShapes(false, shaperecs, filllist, linelist);
         }
-
         public AptCharacterShape(List<IShapeRecordRGBA> shaperecs, List<FillStyleRGBA> filllist, List<LineStyleRGBA> linelist, Globals globaldata, int id) : base(globaldata, id)
         {
             BuildShapes(false, shaperecs, filllist, linelist);
         }
-
         public AptCharacterShape(List<IShapeRecordRGBA> shaperecs, List<FillStyleRGBA> filllist, List<LineStyleRGBA> linelist, int? line, int? fill0, int? fill1, Globals globaldata, int id) : base(globaldata, id)
         {
             BuildShapes(false, shaperecs, filllist, linelist, line, fill0, fill1);
         }
-
         public AptCharacterShape(DefineShapeTag tag, Globals globaldata) : base(globaldata, tag.TagID)
         {
             BoundingRect = new AptRect { fLeft = tag.ShapeBounds.XMin / 20.0f, fTop = tag.ShapeBounds.YMin / 20.0f, fRight = tag.ShapeBounds.XMax / 20.0f, fBottom = tag.ShapeBounds.YMax / 20.0f };

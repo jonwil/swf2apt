@@ -794,6 +794,7 @@ struct behavior {
   int steiner;
   REAL minangle, goodangle, offconstant;
   REAL maxarea;
+  int pointshack;
 
 /* Variables for file names.                                                 */
 
@@ -3315,6 +3316,7 @@ struct behavior *b;
   b->conformdel = 0;
   b->steiner = -1;
   b->order = 1;
+  b->pointshack = 0;
   b->minangle = 0.0;
   b->maxarea = -1.0;
   b->quiet = b->verbose = 0;
@@ -3330,6 +3332,9 @@ struct behavior *b;
         if (argv[i][j] == 'p') {
           b->poly = 1;
 	}
+        if (argv[i][j] == 'Z') {
+            b->pointshack = 1;
+    }
 #ifndef CDT_ONLY
         if (argv[i][j] == 'r') {
           b->refine = 1;
@@ -11863,8 +11868,20 @@ int newmark;
     if (crosssubseg.ss == m->dummysub) {
       return 0;
     } else {
+      if (!b->pointshack)
+      {
+        /* Insert a vertex at the intersection. */
+        segmentintersection(m, b, &crosstri, &crosssubseg, endpoint2);
+        otricopy(crosstri, *searchtri);
+        insertsubseg(m, b, searchtri, newmark);
+        /* Insert the remainder of the segment. */
+        return scoutsegment(m, b, searchtri, endpoint2, newmark);
+      }
+      else
+      {
         if (b->verbose > 2) printf("Not correctly inserting new point at intersection (NO_NEW_POINTS_HACK)\n");
         return 1;
+      }
     }
   }
 }
@@ -12216,8 +12233,19 @@ int newmark;
         if (crosssubseg.ss == m->dummysub) {
           flip(m, b, &fixuptri);    /* May create inverted triangle at left. */
         } else {
+          if (!b->pointshack)
+          {
+            /* We've collided with a segment between endpoint1 and endpoint2. */
+            collision = 1;
+            /* Insert a vertex at the intersection. */
+            segmentintersection(m, b, &fixuptri, &crosssubseg, endpoint2);
+            done = 1;
+          }
+          else
+          {
             collision = 0;
             done = 1;
+          }
         }
       }
     }

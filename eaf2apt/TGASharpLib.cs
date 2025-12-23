@@ -5599,6 +5599,38 @@ namespace TGASharpLib
             }
         }
 
+        int GetRunCount(byte[] data, int offset, int max, int size)
+        {
+            int count = 0;
+
+            if (max > 128)
+            {
+                max = 128;
+            }
+
+            while (count < max)
+            {
+                bool match = true;
+                for (int i = 0; i < size; i++)
+                {
+                    if (data[offset + (0 * size) + i] != data[offset + (count * size) + i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (!match)
+                {
+                    break;
+                }
+
+                count++;
+            }
+
+            return count;
+        }
+
         /// <summary>
         /// Encode image with RLE compression (used RLE per line)!
         /// </summary>
@@ -5622,45 +5654,58 @@ namespace TGASharpLib
 
             try
             {
-                int Count = 0;
-                int Pos = 0;
-                bool IsRLE = false;
                 List<byte> Encoded = new List<byte>();
                 byte[] RowData = new byte[ScanLineSize];
 
                 for (int y = 0; y < Height; y++)
                 {
-                    Pos = 0;
                     Buffer.BlockCopy(ImageData, y * ScanLineSize, RowData, 0, ScanLineSize);
+                    int Pos = Width;
+                    int Offset = 0;
 
-                    while (Pos < ScanLineSize)
+                    while (Pos > 0)
                     {
-                        if (Pos >= ScanLineSize - Bpp)
+                        int Count = GetRunCount(RowData, Offset, Pos, Bpp);
+                        int Count2 = GetRunCount(RowData, Offset + Count * Bpp, Pos - Count, Bpp);
+
+                        if (Count >= 3 || (Count >= 2 && (Count2 >= 2 || (int)Header.ImageSpec.PixelDepth > 8)))
                         {
-                            Encoded.Add(0);
-                            Encoded.AddRange(BitConverterExt.GetElements(RowData, Pos, Bpp));
-                            Pos += Bpp;
-                            break;
+                            Encoded.Add((byte)(0x80 | Count - 1));
+                            Encoded.AddRange(BitConverterExt.GetElements(RowData, Offset, Bpp));
+                            Offset += Count * Bpp;
+                            Pos -= Count;
                         }
-
-                        Count = 0; //1
-                        IsRLE = BitConverterExt.IsElementsEqual(RowData, Pos, Pos + Bpp, Bpp);
-
-                        for (int i = Pos + Bpp; i < Math.Min(Pos + 128 * Bpp, ScanLineSize) - Bpp; i += Bpp)
+                        else
                         {
-                            if (IsRLE ^ BitConverterExt.IsElementsEqual(RowData, (IsRLE ? Pos : i), i + Bpp, Bpp))
+                            for (Count = 1; Count < Pos && Count < 128; Count++)
                             {
-                                //Count--;
-                                break;
-                            }
-                            else
-                                Count++;
-                        }
+                                Count2 = GetRunCount(RowData, Offset + Count * Bpp, Pos - Count, Bpp);
 
-                        int CountBpp = (Count + 1) * Bpp;
-                        Encoded.Add((byte)(IsRLE ? Count | 128 : Count));
-                        Encoded.AddRange(BitConverterExt.GetElements(RowData, Pos, (IsRLE ? Bpp : CountBpp)));
-                        Pos += CountBpp;
+                                if (Count2 >= 3 || (Count2 >= 2 && (int)Header.ImageSpec.PixelDepth > 8))
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (Count >= (Pos - 3))
+                            {
+                                Count = Pos;
+                            }
+
+                            if (Count > 128)
+                            {
+                                Count = 128;
+                            }
+
+                            Encoded.Add((byte)(Count - 1));
+
+                            while (Count-- != 0)
+                            {
+                                Pos--;
+                                Encoded.AddRange(BitConverterExt.GetElements(RowData, Offset, Bpp));
+                                Offset += Bpp;
+                            }
+                        }
                     }
                 }
 

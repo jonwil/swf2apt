@@ -1,4 +1,22 @@
-﻿using SwfLib.Data;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using SwfLib.Data;
 using System.Collections.Generic;
 using System.IO;
 
@@ -16,13 +34,16 @@ namespace eaf2apt.Characters
         public void WriteImportsExports()
         {
             GlobalData.MaxPasses = 3;
+
             for (GlobalData.output.curpass = 1; GlobalData.output.curpass <= GlobalData.MaxPasses; GlobalData.output.curpass++)
             {
                 GlobalData.output.Align(1);
+
                 if (GlobalData.output.curpass == 1)
                 {
                     constpointers[ConstPointerType.imports] = GlobalData.output.GetSize();
                 }
+
                 foreach (var import in imports)
                 {
                     GlobalData.output.WriteFixup(2, @$"main.aImports_{import.GetHashCode()}_URL");
@@ -39,15 +60,20 @@ namespace eaf2apt.Characters
                     GlobalData.output.Write(3, import.Name);
                 }
             }
+
             GlobalData.MaxPasses = 3;
+
             for (GlobalData.output.curpass = 1; GlobalData.output.curpass <= GlobalData.MaxPasses; GlobalData.output.curpass++)
             {
                 GlobalData.output.Align(1);
+
                 if (GlobalData.output.curpass == 1)
                 {
                     constpointers[ConstPointerType.exports] = GlobalData.output.GetSize();
                 }
+
                 int i = 0;
+
                 foreach (var export in exports)
                 {
                     i++;
@@ -59,12 +85,18 @@ namespace eaf2apt.Characters
                 }
             }
         }
-
         public override void OutputCharacter(int i)
         {
             base.OutputCharacter(i);
             GlobalData.output.Write(3, (int)AptCharacterType.Animation);
             GlobalData.output.Write(3, 0x09876543);
+
+            if (GlobalData.IsTT)
+            {
+                GlobalData.output.Write(3, 0x0);
+                GlobalData.output.Write(3, 0x0);
+            }
+
             movie.WriteMovieFrames();
             GlobalData.output.Write(3, chars);
             GlobalData.output.Write(3, constpointers[ConstPointerType.characters]);

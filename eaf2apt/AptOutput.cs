@@ -1,4 +1,22 @@
-﻿using System.Collections.Generic;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System.Collections.Generic;
 using System.IO;
 using SwfLib.Data;
 
@@ -16,6 +34,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             while (stream.Length % 4 != 0)
             {
                 byte b = 0;
@@ -28,10 +47,12 @@ namespace eaf2apt
             {
                 return;
             }
+
             if (str is not null)
             {
                 sr.Write(str.ToCharArray());
             }
+
             sr.Write((byte)0);
         }
         public void Write(int pass, uint value)
@@ -40,6 +61,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write(value);
         }
         public void Write(int pass, int value)
@@ -48,6 +70,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write(value);
         }
         public void Write(int pass, bool value)
@@ -56,7 +79,9 @@ namespace eaf2apt
             {
                 return;
             }
+
             int i;
+
             if (value)
             {
                 i = 1;
@@ -65,6 +90,7 @@ namespace eaf2apt
             {
                 i = 0;
             }
+
             sr.Write(i);
         }
         public void Write(int pass, ushort value)
@@ -73,6 +99,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write(value);
         }
         public void Write(int pass, byte value)
@@ -81,6 +108,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write(value);
         }
         public void WriteFixup(int pass, string fixup)
@@ -89,6 +117,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             fixups[fixup] = (int)stream.Length;
             int i = 0;
             sr.Write(i);
@@ -99,6 +128,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             int length = (int)stream.Length;
             int address = length;
             sr.Seek(fixups[fixup], SeekOrigin.Begin);
@@ -112,6 +142,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Seek(fixups[fixup], SeekOrigin.Begin);
             sr.Write(value);
             sr.Seek(0, SeekOrigin.End);
@@ -130,6 +161,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write(value);
         }
         unsafe public void Write(int pass, AptRect boundingrect)
@@ -138,6 +170,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             Write(pass, boundingrect.fLeft);
             Write(pass, boundingrect.fTop);
             Write(pass, boundingrect.fRight);
@@ -149,6 +182,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             sr.Write((float)matrix.ScaleX);
             sr.Write((float)matrix.RotateSkew0);
             sr.Write((float)matrix.RotateSkew1);
@@ -166,6 +200,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             if (enable && color.HasMultTerms)
             {
                 Write(pass, ToColor(color.BlueMultTerm));
@@ -180,6 +215,7 @@ namespace eaf2apt
                 Write(pass, (byte)255);
                 Write(pass, (byte)255);
             }
+
             if (enable && color.HasAddTerms)
             {
                 Write(pass, ToColor(color.BlueAddTerm));
@@ -201,6 +237,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             if (color.HasMultTerms)
             {
                 Write(pass, color.RedMultTerm / 256.0f);
@@ -215,6 +252,7 @@ namespace eaf2apt
                 Write(pass, 1.0f);
                 Write(pass, 1.0f);
             }
+
             if (color.HasAddTerms)
             {
                 Write(pass, color.RedAddTerm / 256.0f);
@@ -236,6 +274,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             Write(pass, color.scale[0] / 256.0f);
             Write(pass, color.scale[1] / 256.0f);
             Write(pass, color.scale[2] / 256.0f);
@@ -251,6 +290,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             int c = (255 << 24) | (color.Red << 16) | (color.Green << 8) | (color.Blue);
             sr.Write(c);
         }
@@ -260,6 +300,7 @@ namespace eaf2apt
             {
                 return;
             }
+
             int c = (color.Alpha << 24) | (color.Red << 16) | (color.Green << 8) | (color.Blue);
             sr.Write(c);
         }

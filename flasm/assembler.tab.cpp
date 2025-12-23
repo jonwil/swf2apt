@@ -619,7 +619,7 @@ typedef union YYSTYPE {
   char *str;
 } YYSTYPE;
 /* Line 186 of glr.c.  */
-#line 623 "assembler.tab.c"
+#line 623 "assembler.tab.cpp"
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
@@ -646,7 +646,7 @@ static YYSTYPE yyval_default;
 
 
 /* Line 217 of glr.c.  */
-#line 650 "assembler.tab.c"
+#line 650 "assembler.tab.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -4892,7 +4892,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 # undef yyclearin
 # undef YYRECOVERING
 /* Line 872 of glr.c.  */
-#line 4896 "assembler.tab.c"
+#line 4896 "assembler.tab.cpp"
 }
 
 

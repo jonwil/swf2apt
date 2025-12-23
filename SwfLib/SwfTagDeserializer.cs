@@ -835,6 +835,12 @@ namespace SwfLib {
 
         SwfTagBase ISwfTagVisitor<ISwfStreamReader, SwfTagBase>.Visit(DefineSoundTag tag, ISwfStreamReader reader) {
             tag.SoundID = reader.ReadUInt16();
+            tag.SoundFormat = (byte)reader.ReadUnsignedBits(4);
+            tag.SoundRate = (byte)reader.ReadUnsignedBits(2);
+            tag.SoundSize = (byte)reader.ReadUnsignedBits(1);
+            tag.SoundType = (byte)reader.ReadUnsignedBits(1);
+            tag.SoundSampleCount = reader.ReadUInt32();
+            tag.SoundData = reader.ReadRest();
             return tag;
         }
 

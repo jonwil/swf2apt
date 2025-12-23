@@ -1,4 +1,22 @@
-﻿using SwfLib.Actions;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using SwfLib.Actions;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +40,7 @@ namespace eaf2apt
             {
                 int j = 0;
                 var action = actions[i];
+
                 switch (action)
                 {
                     case ActionPush push:
@@ -49,25 +68,32 @@ namespace eaf2apt
             GlobalData.output.WriteFixup(pass, @$"{str}_Actions");
             GlobalData.output.Align(pass + 1);
             GlobalData.output.FixupPointer(pass + 1, @$"{str}_Actions");
+
             if (!bytepositions.ContainsKey(str))
             {
                 bytepositions[str] = new();
             }
+
             if (!tracepositions.ContainsKey(str))
             {
                 tracepositions[str] = new();
             }
+
             string withpos = "";
             int tracenum = 0;
+
             for (int i = 0; i < actions.Count; i++)
             {
                 var action = actions[i];
                 var tag = action.ActionCode;
+
                 if (GlobalData.output.curpass == pass + 1)
                 {
                     bytepositions[str][action.LocalLabel] = GlobalData.output.GetSize();
                 }
+
                 GlobalData.output.Write(pass + 1, (byte)tag);
+
                 switch (action)
                 {
                     case ActionConstantPool constantpool:
@@ -77,9 +103,11 @@ namespace eaf2apt
                             GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}_ConstantPool");
                             GlobalData.output.Align(pass + 2);
                             GlobalData.output.FixupPointer(pass + 2, @$"{str}_{action.GetHashCode()}_ConstantPool");
+
                             if (GlobalData.output.curpass == pass + 2)
                             {
                                 int c = 0;
+
                                 foreach (var data in constantpool.ConstantPool)
                                 {
                                     string u = UniqueName(action, c, data);
@@ -96,9 +124,11 @@ namespace eaf2apt
                             GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}_Items");
                             GlobalData.output.Align(pass + 2);
                             GlobalData.output.FixupPointer(pass + 2, @$"{str}_{action.GetHashCode()}_Items");
+
                             if (GlobalData.output.curpass == pass + 2)
                             {
                                 int c = 0;
+
                                 foreach (var data in push.Items)
                                 {
                                     string u = UniqueName(action, c, data);
@@ -113,16 +143,20 @@ namespace eaf2apt
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = jump.BranchOffset;
+
                                 if (GlobalData.output.curpass == pass + 2 && !bytepositions[str].ContainsKey(label))
                                 {
                                     label = -1;
                                 }
+
                                 GlobalData.output.Align(pass + 1);
                                 GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}");
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}"];
@@ -136,16 +170,20 @@ namespace eaf2apt
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = iftrue.BranchOffset;
+
                                 if (GlobalData.output.curpass == pass + 2 && !bytepositions[str].ContainsKey(label))
                                 {
                                     label = -1;
                                 }
+
                                 GlobalData.output.Align(pass + 1);
                                 GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}");
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}"];
@@ -159,16 +197,20 @@ namespace eaf2apt
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = iffalse.BranchOffset;
+
                                 if (GlobalData.output.curpass == pass + 2 && !bytepositions[str].ContainsKey(label))
                                 {
                                     label = -1;
                                 }
+
                                 GlobalData.output.Align(pass + 1);
                                 GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}");
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}"];
@@ -224,14 +266,17 @@ namespace eaf2apt
                         {
                             GlobalData.output.Align(pass + 1);
                             withpos = @$"{str}_with_{action.GetHashCode()}";
+
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = with.CodeSize;
                                 GlobalData.output.WriteFixup(pass + 1, @$"{withpos}_skip");
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{withpos}_skip"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{withpos}_skip"];
@@ -251,6 +296,7 @@ namespace eaf2apt
                             GlobalData.output.Write(pass + 2, definefunction.Name);
                             GlobalData.output.Align(pass + 2);
                             GlobalData.output.FixupPointer(pass + 2, @$"{str}_{action.GetHashCode()}_Args");
+
                             foreach (var p in definefunction.Args)
                             {
                                 GlobalData.output.WriteFixup(pass + 2, @$"{str}_{action.GetHashCode()}_{p}");
@@ -258,6 +304,7 @@ namespace eaf2apt
                                 GlobalData.output.FixupPointer(pass + 3, @$"{str}_{action.GetHashCode()}_{p}");
                                 GlobalData.output.Write(pass + 3, p);
                             }
+
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = definefunction.CodeSize;
@@ -265,10 +312,12 @@ namespace eaf2apt
                                 GlobalData.output.Align(pass + 1);
                                 GlobalData.output.Write(pass + 1, 0x98765432);
                                 GlobalData.output.Write(pass + 1, 0x12345678);
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}"];
@@ -398,15 +447,19 @@ namespace eaf2apt
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 string label = @$"AfterTraceOffset{tracenum}";
+
                                 if (GlobalData.output.curpass == pass + 2 && !tracepositions[str].ContainsKey(label))
                                 {
                                     label = "AfterTraceOffset-1";
                                 }
+
                                 GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}_tracestart_{tracenum}");
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}_tracestart_{tracenum}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = tracepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}_tracestart_{tracenum}"];
@@ -432,6 +485,7 @@ namespace eaf2apt
                             GlobalData.output.Write(pass + 1, trycatch.Flags);
                             GlobalData.output.Write(pass + 1, (byte)0);
                             GlobalData.output.Write(pass + 1, (byte)0);
+
                             if (trycatch.CatchInRegister)
                             {
                                 GlobalData.output.Write(pass + 1, trycatch.CatchRegister);
@@ -445,19 +499,23 @@ namespace eaf2apt
                                 GlobalData.output.FixupPointer(pass + 2, @$"{str}_{action.GetHashCode()}_CatchName");
                                 GlobalData.output.Write(pass + 2, trycatch.CatchName);
                             }
+
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int trylabel = trycatch.TrySize;
                                 int catchlabel = trycatch.CatchSize;
                                 int finallylabel = trycatch.CatchSize;
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}_try"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][trylabel] - jumppositions[@$"{str}_{action.GetHashCode()}_try"];
                                     GlobalData.output.FixupInt(pass + 2, @$"{str}_{action.GetHashCode()}_TrySize", delta);
+
                                     if (!trycatch.CatchBlock)
                                     {
                                         delta = 0;
@@ -466,7 +524,9 @@ namespace eaf2apt
                                     {
                                         delta = bytepositions[str][catchlabel] - bytepositions[str][trylabel];
                                     }
+
                                     GlobalData.output.FixupInt(pass + 2, @$"{str}_{action.GetHashCode()}_CatchSize", delta);
+
                                     if (!trycatch.FinallyBlock)
                                     {
                                         delta = 0;
@@ -475,6 +535,7 @@ namespace eaf2apt
                                     {
                                         delta = bytepositions[str][finallylabel] - bytepositions[str][catchlabel];
                                     }
+
                                     GlobalData.output.FixupInt(pass + 2, @$"{str}_{action.GetHashCode()}_FinallySize", delta);
                                 }
                             }
@@ -493,6 +554,7 @@ namespace eaf2apt
                             GlobalData.output.Write(pass + 2, definefunction2.Name);
                             GlobalData.output.Align(pass + 2);
                             GlobalData.output.FixupPointer(pass + 2, @$"{str}_{action.GetHashCode()}_Parameters");
+
                             foreach (var p in definefunction2.Parameters)
                             {
                                 GlobalData.output.Write(pass + 2, (int)(byte)p.Register);
@@ -501,21 +563,26 @@ namespace eaf2apt
                                 GlobalData.output.FixupPointer(pass + 3, @$"{str}_{action.GetHashCode()}_{p.GetHashCode()}_Name");
                                 GlobalData.output.Write(pass + 3, p.Name);
                             }
+
                             if (GlobalData.output.curpass == pass + 1 || GlobalData.output.curpass == pass + 2)
                             {
                                 int label = definefunction2.CodeSize;
+
                                 if (GlobalData.output.curpass == pass + 2 && !bytepositions[str].ContainsKey(label))
                                 {
                                     label = -1;
                                 }
+
                                 GlobalData.output.WriteFixup(pass + 1, @$"{str}_{action.GetHashCode()}");
                                 GlobalData.output.Align(pass + 1);
                                 GlobalData.output.Write(pass + 1, 0x98765432);
                                 GlobalData.output.Write(pass + 1, 0x12345678);
+
                                 if (GlobalData.output.curpass == pass + 1)
                                 {
                                     jumppositions[@$"{str}_{action.GetHashCode()}"] = GlobalData.output.GetSize();
                                 }
+
                                 if (GlobalData.output.curpass == pass + 2)
                                 {
                                     int delta = bytepositions[str][label] - jumppositions[@$"{str}_{action.GetHashCode()}"];
@@ -526,6 +593,7 @@ namespace eaf2apt
                         break;
                 }
             }
+
             if (GlobalData.output.curpass == pass + 1)
             {
                 bytepositions[str][-1] = GlobalData.output.GetSize();
@@ -541,9 +609,11 @@ namespace eaf2apt
                 GlobalData.output.Align(2);
                 GlobalData.output.FixupPointer(2, "Constants");
                 int index = 0;
+
                 foreach (var c in constants)
                 {
                     GlobalData.output.Align(2);
+
                     switch (c.Type)
                     {
                         case ActionPushItemType.String:
@@ -595,6 +665,7 @@ namespace eaf2apt
                             GlobalData.output.Write(2, (int)c.Register);
                             break;
                     }
+
                     index++;
                 }
             }

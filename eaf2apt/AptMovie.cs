@@ -1,4 +1,22 @@
-﻿using eaf2apt.Controls;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using eaf2apt.Controls;
 using SwfLib.Tags;
 using SwfLib.Tags.ActionsTags;
 using SwfLib.Tags.ControlTags;
@@ -16,16 +34,19 @@ namespace eaf2apt
         public void AddConstants()
         {
             int framecount = frames.Count;
+
             if (framecount > 0)
             {
                 for (int i = 0; i < framecount; i++)
                 {
                     int controls = frames[i].Controls.Count;
+
                     if (controls > 0)
                     {
                         for (int j = 0; j < controls; j++)
                         {
                             var control = frames[i].Controls[j];
+
                             switch (control)
                             {
                                 case AptControlPlaceObject2 placeobject2:
@@ -55,11 +76,13 @@ namespace eaf2apt
             int famecount = frames.Count;
             GlobalData.output.Write(3, famecount);
             GlobalData.output.Align(3);
+
             if (famecount > 0)
             {
                 GlobalData.output.WriteFixup(3, @$"{GetHashCode()}_Frames");
                 GlobalData.output.Align(4);
                 GlobalData.output.FixupPointer(4, @$"{GetHashCode()}_Frames");
+
                 for (int i = 0; i < famecount; i++)
                 {
                     frames[i].WriteFrame(i);
@@ -76,6 +99,7 @@ namespace eaf2apt
             int stream = 1;
             GlobalData = globaldata;
             AptFrame frame = new(globaldata);
+
             foreach (var Tag in Tags)
             {
                 switch (Tag)

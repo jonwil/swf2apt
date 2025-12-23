@@ -1,4 +1,22 @@
-﻿using SwfLib.Tags.ButtonTags;
+﻿/*
+**	swf2apt
+**	Copyright 2025 Jonathan Wilson
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using SwfLib.Tags.ButtonTags;
 using System.Collections.Generic;
 
 namespace eaf2apt.Characters
@@ -13,6 +31,7 @@ namespace eaf2apt.Characters
         {
             int length = verts.Count;
             int index = -1;
+
             for (short i = 0; i < length; i += 2)
             {
                 if (verts[i] == x && verts[i + 1] == y)
@@ -21,12 +40,14 @@ namespace eaf2apt.Characters
                     break;
                 }
             }
+
             if (index == -1)
             {
                 verts.Add(x);
                 verts.Add(y);
                 index = length / 2;
             }
+
             indexes.Add((short)index);
         }
         public void UpdateHitTestShape()
@@ -34,6 +55,7 @@ namespace eaf2apt.Characters
             Bounds = new AptRect { fTop = 0, fLeft = 0, fBottom = -1, fRight = -1 };
             List<float> verts = new();
             List<short> indices = new();
+
             foreach (var br in Tag.Characters)
             {
                 if (br.StateHitTest)
@@ -41,6 +63,7 @@ namespace eaf2apt.Characters
                     if (GlobalData.AllCharacters[br.CharacterID] is AptCharacterShape hit)
                     {
                         Bounds = hit.BoundingRect;
+
                         foreach (var shape in hit.shapes)
                         {
                             foreach (var tri in shape.triangles)
@@ -53,6 +76,7 @@ namespace eaf2apt.Characters
                     }
                 }
             }
+
             Vertices = verts.ToArray();
             Indices = indices.ToArray();
         }
@@ -61,6 +85,13 @@ namespace eaf2apt.Characters
             base.OutputCharacter(i);
             GlobalData.output.Write(3, (int)AptCharacterType.Button);
             GlobalData.output.Write(3, 0x09876543);
+
+            if (GlobalData.IsTT)
+            {
+                GlobalData.output.Write(3, 0x0);
+                GlobalData.output.Write(3, 0x0);
+            }
+
             GlobalData.output.Write(3, Tag.TrackAsMenu);
             GlobalData.output.Write(3, Bounds);
             GlobalData.output.Write(3, Indices.Length / 3);
@@ -69,16 +100,20 @@ namespace eaf2apt.Characters
             GlobalData.output.WriteFixup(3, @$"{i}_HitTestIndexTable");
             GlobalData.output.Align(4);
             GlobalData.output.FixupPointer(4, @$"{i}_HitTestVertexTable");
+
             foreach (var v in Vertices)
             {
                 GlobalData.output.Write(4, (float)v);
             }
+
             GlobalData.output.Align(4);
             GlobalData.output.FixupPointer(4, @$"{i}_HitTestIndexTable");
+
             foreach (var ind in Indices)
             {
                 GlobalData.output.Write(4, (ushort)ind);
             }
+
             GlobalData.output.Write(3, Tag.Characters.Count);
             GlobalData.output.WriteFixup(3, @$"{GetHashCode()}_Characters");
             GlobalData.output.Write(3, Tag.Conditions.Count);
@@ -86,6 +121,7 @@ namespace eaf2apt.Characters
             GlobalData.output.Write(3, 0);
             GlobalData.output.Align(4);
             GlobalData.output.FixupPointer(4, @$"{GetHashCode()}_Characters");
+
             foreach (var br in Tag.Characters)
             {
                 GlobalData.output.Align(4);
@@ -95,8 +131,10 @@ namespace eaf2apt.Characters
                 GlobalData.output.Write(4, br.PlaceMatrix);
                 GlobalData.output.Write(4, br.ColorTransform);
             }
+
             GlobalData.output.Align(4);
             GlobalData.output.FixupPointer(4, @$"{GetHashCode()}_Conditions");
+
             foreach (var ar in Tag.Conditions)
             {
                 GlobalData.output.Write(4, (int)ar.Conditions);

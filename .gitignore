@@ -24,4 +24,5 @@ Debug
 /eaf2apt/*.const
 /eaf2apt/*.dat
 /eaf2apt/*.xml
-/eaf2apt/Properties/launchSettings.json
+/libjpeg/msvc.exp
+/libjpeg/msvc.lib

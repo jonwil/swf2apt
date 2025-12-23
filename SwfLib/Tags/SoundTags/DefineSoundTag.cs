@@ -12,5 +12,11 @@
             return visitor.Visit(this, arg);
         }
         public override int TagID => SoundID;
+        public byte SoundFormat;
+        public byte SoundRate;
+        public byte SoundSize;
+        public byte SoundType;
+        public uint SoundSampleCount;
+        public byte[] SoundData;
     }
 }

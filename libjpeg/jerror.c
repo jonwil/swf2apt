@@ -128,6 +128,22 @@ emit_message (j_common_ptr cinfo, int msg_level)
  * characters.  Note that no '\n' character is added to the string.
  * Few applications should need to override this method.
  */
+_Success_(return >= 0)
+_Check_return_opt_
+_CRT_STDIO_INLINE int __CRTDECL jsprintf(
+    _Pre_notnull_ _Always_(_Post_z_) char* const _Buffer,
+    _In_z_ _Printf_format_string_    char const* const _Format,
+    ...)
+{
+    int _Result;
+    va_list _ArgList;
+    __crt_va_start(_ArgList, _Format);
+
+    _Result = _vsprintf_l(_Buffer, _Format, NULL, _ArgList);
+
+    __crt_va_end(_ArgList);
+    return _Result;
+}
 
 METHODDEF(void)
 format_message (j_common_ptr cinfo, char * buffer)
@@ -166,9 +182,9 @@ format_message (j_common_ptr cinfo, char * buffer)
 
   /* Format the message into the passed buffer */
   if (isstring)
-    sprintf(buffer, msgtext, err->msg_parm.s);
+    jsprintf(buffer, msgtext, err->msg_parm.s);
   else
-    sprintf(buffer, msgtext,
+    jsprintf(buffer, msgtext,
 	    err->msg_parm.i[0], err->msg_parm.i[1],
 	    err->msg_parm.i[2], err->msg_parm.i[3],
 	    err->msg_parm.i[4], err->msg_parm.i[5],

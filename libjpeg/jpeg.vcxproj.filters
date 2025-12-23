@@ -101,12 +101,6 @@
     <ClCompile Include="jdapistd.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="jdatadst.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="jdatasrc.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="jdcoefct.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -191,10 +185,22 @@
     <ClCompile Include="dojpeg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="jdatadst.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jdatasrc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="format.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="jpeg.def">
       <Filter>Source Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="msvc.def" />
   </ItemGroup>
 </Project>

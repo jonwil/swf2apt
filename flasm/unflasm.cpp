@@ -20,6 +20,7 @@ void skipProtected(FILE *f, unsigned long int length);
 void print(char *s, ...);
 
 extern void tellUser(int isError, char *s, ...);
+extern char isRA3;
 
 static int indent = 1;
 static int targetIndent = 0;
@@ -603,7 +604,19 @@ static void printActionRecord(byte *p, Action type, unsigned int *lenptr, char *
 				char *str = dictionary[(short)*p].value;
 				short v = *p;
 				++dictionary[v].count;
-				print("&dcallfp %d\t\t\t\t\t\t\t// %s()\n", v, str);
+				if (!isRA3)
+				{
+					signed char c = v;
+					if (c < 0)
+					{
+						str = "(null)";
+					}
+					print("&dcallfp %d\t\t\t\t\t\t\t// %s()\n", c, str);
+				}
+				else
+				{
+					print("&dcallfp %d\t\t\t\t\t\t\t// %s()\n", v, str);
+				}
 				break;
 			}
 		case SWFACTION_TRACESTART:
@@ -622,7 +635,19 @@ static void printActionRecord(byte *p, Action type, unsigned int *lenptr, char *
 				char *str = dictionary[(short)*p].value;
 				short v = *p;
 				++dictionary[v].count;
-				print("&dcallmp %d\t\t\t\t\t\t\t// %s()\n", v, str);
+				if (!isRA3)
+				{
+					signed char c = v;
+					if (c < 0)
+					{
+						str = "(null)";
+					}
+					print("&dcallmp %d\t\t\t\t\t\t\t// %s()\n", c, str);
+				}
+				else
+				{
+					print("&dcallmp %d\t\t\t\t\t\t\t// %s()\n", v, str);
+				}
 				break;
 			}
 		case SWFACTION_DICTCALLMETHODSETVAR:
