@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "eaf2apt": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\temp\\ra3snd\\sampleMissionBriefing.swf C:\\temp\\ra3snd\\sampleMissionBriefing --ra3",
+      "workingDirectory": "i:\\temp\\flasm\\flasmtree\\Release",
+      "nativeDebugging": true
+    }
+  }
+}
